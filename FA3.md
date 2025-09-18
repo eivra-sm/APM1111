@@ -1,9 +1,14 @@
 
 Formative Assessment 3
+---
 
-Authors: SINOCRUZ, Arvie & TAGAYTAY, Gabriel
+Authors: 
 
-Ddate: 2025-09-19
+SINOCRUZ, Arvie 
+
+TAGAYTAY, Gabriel
+
+date: 2025-09-19
 ---
 
 ## Necessary packages
