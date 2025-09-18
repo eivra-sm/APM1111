@@ -1,14 +1,16 @@
 ---
 title: "Formative Assessment 3"
-author: "SINOCRUZ, ARVIE"
-date: "2025-09-14"
+author: "SINOCRUZ, A & TAGAYTAY, G"
+date: "2025-09-19"
 output: pdf_document
+
 ---
 
 ## Necessary packages
 ```{r}
 library(moments)
 library(knitr)
+library(kableExtra)
 ```
 
 ## Data
@@ -29,10 +31,12 @@ mean_val <- mean(scores)
 std_val <- sd(scores)
 var_val <- var(scores)
 skew_val <- skewness(scores)
-kurt_val <- kurtosis(scores) - 3  
+ses <- sqrt((6*n*(n-1)) / ((n-2)*(n+1)*(n+3)))
+kurt_val <- kurtosis(scores)   
+sek <- 2 * ses * sqrt((n^2 - 1) / ((n-3)*(n+5)))
 ```
 
-## Percentiles
+## Quartiles/Percentiles
 ```{r}
 q1 <- quantile(scores, 0.25)
 q2 <- quantile(scores, 0.50)
@@ -43,7 +47,7 @@ p95 <- quantile(scores, 0.95)
 
 # Building the table
 ```{r}
-descriptive_stats <- data.frame(
+desc_stats <- data.frame(
   Statistic = c(
     "Valid",
     "Mode",
@@ -52,7 +56,9 @@ descriptive_stats <- data.frame(
     "Std. Deviation",
     "Variance",
     "Skewness",
+    "Std. Error of Skewness",
     "Kurtosis",
+    "Std. Error of Kurtosis",
     "Minimum",
     "Maximum",
     "25th percentile",
@@ -69,7 +75,9 @@ descriptive_stats <- data.frame(
     std_val,
     var_val,
     skew_val,
+    ses,
     kurt_val,
+    sek,
     min(scores),
     max(scores),
     q1,
@@ -81,13 +89,36 @@ descriptive_stats <- data.frame(
 )
 ```
 
+## Format numbers to 3 decimal places
 ```{r}
-# Print table (simple, works in all R versions)
+desc_stats$Score <- formatC(desc_stats$Score, format = "f", digits = 3)
+```
+
+## Printing the table
+```{r}
 knitr::kable(
-  descriptive_stats,
-  format = "latex",
-  booktabs = TRUE,
-  caption = "Descriptive Statistics of Test Scores",
+  desc_stats,
+  format = "pipe",
+  caption = "Descriptive Statistics",
   align = c("l","r")
-)
+) %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, background = "#A9CCE3") %>%
+  row_spec(1, background = "#F9F9F9") %>% 
+  row_spec(2, background = "#FCF3CF") %>% 
+  row_spec(3, background = "#F9F9F9") %>% 
+  row_spec(4, background = "#FCF3CF") %>% 
+  row_spec(5, background = "#F9F9F9") %>% 
+  row_spec(6, background = "#FCF3CF") %>% 
+  row_spec(7, background = "#F9F9F9") %>% 
+  row_spec(8, background = "#FCF3CF") %>% 
+  row_spec(9, background = "#F9F9F9") %>% 
+  row_spec(10, background = "#FCF3CF") %>% 
+  row_spec(11, background = "#F9F9F9") %>% 
+  row_spec(12, background = "#FCF3CF") %>% 
+  row_spec(13, background = "#F9F9F9") %>% 
+  row_spec(14, background = "#FCF3CF") %>% 
+  row_spec(15, background = "#F9F9F9") %>% 
+  row_spec(16, background = "#FCF3CF") %>% 
+  row_spec(17, background = "#F9F9F9")
 ```
