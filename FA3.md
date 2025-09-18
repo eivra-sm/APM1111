@@ -1,6 +1,6 @@
 
 # Formative Assessment 3
----
+
 
 Authors: 
 
@@ -10,7 +10,7 @@ TAGAYTAY, Gabriel
 
 Date: 2025-09-19
 
----
+--
 
 ## Necessary packages
 ```{r}
