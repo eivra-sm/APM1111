@@ -1,9 +1,9 @@
----
-title: "Formative Assessment 3"
-author: "SINOCRUZ, A & TAGAYTAY, G"
-date: "2025-09-19"
-output: pdf_document
 
+Formative Assessment 3
+
+Authors: SINOCRUZ, Arvie & TAGAYTAY, Gabriel
+
+Ddate: 2025-09-19
 ---
 
 ## Necessary packages
