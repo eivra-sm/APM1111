@@ -28,7 +28,7 @@ scores <- c(
   96, 61, 57, 75, 93, 34, 75, 53, 32, 28, 73, 51, 69, 91, 35)
 ```
   
-## Descriptive statistics
+## Descriptive Statistics
 ```{r}
 n <- length(scores)
 mode_val <- as.numeric(names(sort(-table(scores)))[1])
@@ -51,7 +51,7 @@ d9 <- quantile(scores, 0.90)
 p95 <- quantile(scores, 0.95)
 ```
 
-# Building the table
+## Building the table
 ```{r}
 desc_stats <- data.frame(
   Statistic = c(
