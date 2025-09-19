@@ -1,16 +1,14 @@
-
-# Formative Assessment 3
-
-
-Authors: 
-
-SINOCRUZ, Arvie 
-
-TAGAYTAY, Gabriel
-
-Date: 2025-09-19
+---
+title: "Formative Assessment 3"
+author: "SINOCRUZ, A & TAGAYTAY, G"
+date: "2025-09-19"
+output: pdf_document
 
 ---
+
+```{r github_link, echo=FALSE, results='asis'}
+cat("\\textbf{GITHUB LINK:} https://github.com/eivra-sm/APM1111/blob/main/FA3.md\n\n")
+```
 
 ## Necessary packages
 ```{r}
@@ -31,14 +29,16 @@ scores <- c(
 ## Descriptive Statistics
 ```{r}
 n <- length(scores)
+mean_val <- mean(scores)
 mode_val <- as.numeric(names(sort(-table(scores)))[1])
 median_val <- median(scores)
-mean_val <- mean(scores)
+pop_sd <- sqrt(sum((scores - mean_val)^2) / n)
+pop_var <- pop_sd^2
 std_val <- sd(scores)
 var_val <- var(scores)
-skew_val <- skewness(scores)
+skew_val <- sum((scores - mean_val)^3) / (n * pop_sd^3)
 ses <- sqrt((6*n*(n-1)) / ((n-2)*(n+1)*(n+3)))
-kurt_val <- kurtosis(scores)   
+kurt_val <- sum((scores - mean_val)^4) / (n * pop_sd^4) - 3
 sek <- 2 * ses * sqrt((n^2 - 1) / ((n-3)*(n+5)))
 ```
 
@@ -104,7 +104,7 @@ desc_stats$Score <- formatC(desc_stats$Score, format = "f", digits = 3)
 ```{r}
 knitr::kable(
   desc_stats,
-  format = "pipe",
+  format = "latex",
   caption = "Descriptive Statistics",
   align = c("l","r")
 ) %>%
