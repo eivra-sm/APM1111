@@ -12,7 +12,7 @@ Date: October 03, 2025
 
 GITHUB LINK: https://github.com/eivra-sm/APM1111/blob/main/FA4.md
 
-#Problem 1
+# Problem 1
 
 ## Given Data
 ```{r}
@@ -78,7 +78,7 @@ cat("\n(d) Fourth moments:\n"); print(fourth_moments)
 
 ```
 
-#Problem 2
+# Problem 2
 ## Function to compute central moments (about the mean)
 
 ```{r}
