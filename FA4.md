@@ -1,16 +1,17 @@
-# Formative Assessment 4
-
-Authors:
-
-Sinocruz, Arvie
-
-Tagaytay Gabriel
-
-Date: October 03, 2025
-
+---
+title: "Formative Assessment 4"
+author: "SINOCRUZ, A & TAGAYTAY, G"
+date: "`r Sys.Date()`"
+output: pdf_document
 ---
 
-**Github Link:** https://github.com/eivra-sm/APM1111/blob/main/FA4.md
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r github_link, echo=FALSE, results='asis'}
+cat("\\textbf{GITHUB LINK:} https://github.com/eivra-sm/APM1111/blob/main/FA4.md")
+```
 
 ## Given Data
 ```{r}
@@ -125,4 +126,52 @@ cat("\n(a) First central moments (exact 0):\n"); print(first_central)
 cat("\n(b) Second central moments (variance):\n"); print(second_central)
 cat("\n(c) Third central moments:\n"); print(third_central)
 cat("\n(d) Fourth central moments:\n"); print(fourth_central)
+```
+
+# QUESTION NUMBER 3 
+```{r}
+# Moments about a constant (in this case, 75)
+moments_about <- function(x, c, kmax = 4) {
+  sapply(1:kmax, function(k) mean((x - c)^k))
+}
+```
+
+```{r}
+# Compute for female height (Normal) about 75
+moments_about_75 <- moments_about(normal, 75, 4)
+
+cat("\nMoments of Normal data about 75:\n")
+names(moments_about_75) <- c("First", "Second", "Third", "Fourth")
+print(moments_about_75)
+```
+
+# QUESTION NUMBER 4
+```{r}
+# Extract raw and central moments for Normal data
+raw_normal <- raw_moments(normal)   # m1', m2', m3', m4'
+central_normal <- central_moments(normal) # m1, m2, m3, m4
+```
+
+```{r}
+# Relation (a) : m2 = m2' - (m1')^2
+lhs_a <- central_normal[2]          # left-hand side
+rhs_a <- raw_normal[2] - raw_normal[1]^2   # right-hand side
+```
+
+```{r}
+# Relation (b) : m3 = m3' - 3 m1' m2' + 2 (m1')^3
+lhs_b <- central_normal[3]
+rhs_b <- raw_normal[3] - 3*raw_normal[1]*raw_normal[2] + 2*raw_normal[1]^3
+```
+
+```{r}
+# Relation (c) : m4 = m4' - 4 m1' m3' + 6 (m1')^2 m2' - 3 (m1')^4
+lhs_c <- central_normal[4]
+rhs_c <- raw_normal[4] - 4*raw_normal[1]*raw_normal[3] +
+         6*(raw_normal[1]^2)*raw_normal[2] - 3*(raw_normal[1]^4)
+
+cat("\n--- Verification of Moment Relations ---\n")
+cat("(a) m2: LHS =", lhs_a, " | RHS =", rhs_a, "\n")
+cat("(b) m3: LHS =", lhs_b, " | RHS =", rhs_b, "\n")
+cat("(c) m4: LHS =", lhs_c, " | RHS =", rhs_c, "\n")
 ```
