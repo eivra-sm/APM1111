@@ -12,6 +12,8 @@ Date: October 03, 2025
 
 GITHUB LINK: https://github.com/eivra-sm/APM1111/blob/main/FA4.md
 
+#Problem 1
+
 ## Given Data
 ```{r}
 normal <- c(67,70,63,65,68,60,70,64,69,61,66,65,71,62,66,68,64,67,62,66,65,63,66,65,63,69,
@@ -28,7 +30,6 @@ uniform <- c(12.1,12.1,12.4,12.1,12.1,12.2,12.2,12.2,11.9,12.2,12.3,12.3,11.7,12
              11.7,11.7,11.7,11.8,12.5,11.8,11.8,11.8,11.9,11.9,11.9,12.2,11.9,12.0,11.9,12.0,
              12.0,12.0)
 ```
-
 
 ## Function to compute raw moments
 
@@ -77,6 +78,7 @@ cat("\n(d) Fourth moments:\n"); print(fourth_moments)
 
 ```
 
+#Problem 2
 ## Function to compute central moments (about the mean)
 
 ```{r}
@@ -127,7 +129,7 @@ cat("\n(c) Third central moments:\n"); print(third_central)
 cat("\n(d) Fourth central moments:\n"); print(fourth_central)
 ```
 
-# QUESTION NUMBER 3 
+# Problem 3
 ```{r}
 # Moments about a constant (in this case, 75)
 moments_about <- function(x, c, kmax = 4) {
@@ -144,7 +146,7 @@ names(moments_about_75) <- c("First", "Second", "Third", "Fourth")
 print(moments_about_75)
 ```
 
-# QUESTION NUMBER 4
+# Problem 4
 ```{r}
 # Extract raw and central moments for Normal data
 raw_normal <- raw_moments(normal)   # m1', m2', m3', m4'
