@@ -10,9 +10,7 @@ Tagaytay, Gabriel
 Date: October 03, 2025
 
 
-```{r github_link, echo=FALSE, results='asis'}
-cat("\\textbf{GITHUB LINK:} https://github.com/eivra-sm/APM1111/blob/main/FA4.md")
-```
+GITHUB LINK: https://github.com/eivra-sm/APM1111/blob/main/FA4.md
 
 ## Given Data
 ```{r}
