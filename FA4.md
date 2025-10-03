@@ -1,13 +1,14 @@
----
-title: "Formative Assessment 4"
-author: "SINOCRUZ, A & TAGAYTAY, G"
-date: "`r Sys.Date()`"
-output: pdf_document
----
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+# Formative Assessment 4
+
+Authors: 
+
+Sinocruz, Arvie
+
+Tagaytay, Gabriel
+
+Date: October 03, 2025
+
 
 ```{r github_link, echo=FALSE, results='asis'}
 cat("\\textbf{GITHUB LINK:} https://github.com/eivra-sm/APM1111/blob/main/FA4.md")
