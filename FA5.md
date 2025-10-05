@@ -7,8 +7,8 @@ SINOCRUZ, ARVIE
 
 TAGAYTAY, GABRIEL
 
-### Date: October 06, 2025
---
+Date: October 06, 2025
+==
 
 # Problem 8.34
 ```{r results='asis'}
