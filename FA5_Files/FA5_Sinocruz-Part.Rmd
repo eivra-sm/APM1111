@@ -1,0 +1,120 @@
+---
+title: "Formative Assessment 5"
+author: "SINOCRUZ, ARVIE"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: false
+    number_sections: false
+    highlight: tango
+---
+
+library(knitr)
+library(tinytex)
+
+## Problem 8.34
+```{r}
+# Given values
+n <- 200
+probab <- 0.5
+q <- 1 - probab
+
+sd_p <- sqrt(probab * q / n)  # Standard deviation of sampling distribution
+
+probab_a <- pnorm(0.40, mean = probab, sd = sd_p)
+
+probab_b <- pnorm(0.57, mean = probab, sd = sd_p) - pnorm(0.43, mean = probab, sd = sd_p)
+
+probab_c <- 1 - pnorm(0.54, mean =probab, sd = sd_p)
+
+# Display results
+cat("Standard deviation (σₚ̂):", round(sd_p, 4), "\n\n")
+cat("(a) P(p̂ < 0.40) =", round(probab_a, 4), "\n")
+cat("(b) P(0.43 < p̂ < 0.57) =", round(probab_b, 4), "\n")
+cat("(c) P(p̂ > 0.54) =", round(probab_c, 4), "\n\n")
+
+x <- seq(0.35, 0.65, by = 0.001)
+y <- dnorm(x, mean = probab, sd = sd_p)
+
+plot(x, y, type = "l", lwd = 2, col = "blue",
+     main = "Sampling Distribution of Proportion (n = 200, probab = 0.5)",
+     xlab = "Sample Proportion (p̂)",
+     ylab = "Density")
+
+# Vertical reference lines
+abline(v = c(0.40, 0.43, 0.54, 0.57), col = "red", lty = 2)
+
+# --- (a) Shade area for p̂ < 0.40 ---
+x_a <- seq(0.35, 0.40, by = 0.001)
+y_a <- dnorm(x_a, mean = probab, sd = sd_p)
+polygon(c(x_a, rev(x_a)), c(y_a, rep(0, length(y_a))), col = "lightcoral", border = NA)
+
+# --- (b) Shade area for 0.43 < p̂ < 0.57 ---
+x_b <- seq(0.43, 0.57, by = 0.001)
+y_b <- dnorm(x_b, mean = probab, sd = sd_p)
+polygon(c(x_b, rev(x_b)), c(y_b, rep(0, length(y_b))), col = "lightgreen", border = NA)
+
+# --- (c) Shade area for p̂ > 0.54 ---
+x_c <- seq(0.54, 0.65, by = 0.001)
+y_c <- dnorm(x_c, mean = probab, sd = sd_p)
+polygon(c(x_c, rev(x_c)), c(y_c, rep(0, length(y_c))), col = "lightblue", border = NA)
+
+# Redraw main curve on top
+lines(x, y, lwd = 2, col = "black")
+
+# Legend
+legend("topright",
+       legend = c("(a) p̂ < 0.40", "(b) 0.43 < p̂ < 0.57", "(c) p̂ > 0.54"),
+       fill = c("lightcoral", "lightgreen", "lightblue"),
+       border = "black", cex = 0.8)
+```
+
+### Interpretation
+1. There’s only about a 0.82% chance that less than 40% will be boys.
+
+2. There’s a 98% chance that between 43% and 57% will be girls.
+
+3. There’s an 11.5% chance that more than 54% will be boys.
+
+## Problem 8.49
+```{r}
+# Define population values and probabilities
+x <- c(6, 9, 12, 15, 18)
+probab <- c(0.1, 0.2, 0.4, 0.2, 0.1)
+n <- 2
+
+# Population mean and variance
+mu <- sum(x * probab)
+sigma2 <- sum(probab * (x - mu)^2)
+
+cat("Population mean (mu) =", mu, "\n")
+cat("Population variance (sigma^2) =", sigma2, "\n\n")
+
+samples <- expand.grid(x1 = x, x2 = x, KEEP.OUT.ATTRS = FALSE)
+samples$mean <- rowMeans(samples)
+
+# Lookup for probabilities
+p_lookup <- setNames(probab, x)
+samples$prob <- p_lookup[as.character(samples$x1)] * p_lookup[as.character(samples$x2)]
+
+# Print the 25 samples
+print(samples)
+
+# Sampling distribution of the sample mean (group identical means)
+dist_mean <- aggregate(prob ~ mean, data = samples, FUN = sum)
+dist_mean <- dist_mean[order(dist_mean$mean), ]
+print(dist_mean)
+
+# Checking the mean and variance of the sampling distribution
+mu_xbar <- sum(dist_mean$mean * dist_mean$prob)
+sigma2_xbar <- sum(dist_mean$prob * (dist_mean$mean - mu_xbar)^2)
+
+cat("\nMean of sampling distribution (mu_xbar) =", mu_xbar, "\n")
+cat("Variance of sampling distribution (sigma^2_xbar) =", sigma2_xbar, "\n")
+cat("sigma^2 / n =", sigma2 / n, "\n")
+```
+
+### Interpretation
+The population of student credit hours at Metropolitan Technological College has an average of 12 hours with moderate variation.
+When we take samples of size 2 (with replacement), the mean of all possible sample means remains 12, confirming that the sample mean is an unbiased estimator.
+However, the spread of these sample means is smaller (variance = 5.4) than the original population (variance = 10.8), showing that averaging reduces variability and makes sample means more reliable indicators of the true population mean.
