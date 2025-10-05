@@ -17,7 +17,7 @@ $$ P(\hat{p} < 0.40) = 0.0082 $$
 $$ P(0.43 < \hat{p} < 0.57) = 0.9802 $$  
 $$ P(\hat{p} > 0.54) = 0.1141 $$  
 
-![Sampling Distribution of Sample Proportion](sampling_distribution.png)
+![Sampling Distribution of Sample Proportion](Graph.png)
 
 ### Interpretation
 1. There’s only about a **0.82%** chance that less than 40% will be boys.  
