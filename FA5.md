@@ -9,6 +9,144 @@ TAGAYTAY, GABRIEL
 
 Date: October 06, 2025
 
+# Problem 8.18
+## Population values (from Problem 8.17)
+```{r}
+population <- c(9, 12, 15)
+```
+## Generate all possible samples of size 2 with replacement
+```{r}
+samples <- expand.grid(A = population, B = population)
+```
+## Compute the sample mean for each combination
+```{r}
+samples$mean <- rowMeans(samples)
+```
+
+## Calculate probabilities (since population is uniform, each has equal prob = 1/9)
+```{r}
+samples$p_xbar <- 1 / nrow(samples)
+```
+
+## Compute xbar * p(xbar) and xbar^2 * p(xbar)
+```{r}
+samples$xbar_p <- samples$mean * samples$p_xbar
+samples$xbar2_p <- (samples$mean^2) * samples$p_xbar
+```
+
+## Display table
+```{r}
+samples
+```
+
+## Compute mean of sampling distribution
+```{r}
+mu_xbar <- sum(samples$xbar_p)
+```
+
+## Compute variance of sampling distribution
+```{r}
+sigma2_xbar <- sum(samples$xbar2_p) - mu_xbar^2
+```
+
+## Compare with population mean and variance
+```{r}
+mu <- mean(population)
+sigma2 <- var(population)
+```
+
+## Show results
+```{r}
+cat("Population mean (mu):", mu, "\n")
+cat("Sampling mean (muxbar):", mu_xbar, "\n")
+cat("Population variance (sigma^2):", sigma2, "\n")
+cat("Sampling variance (sigmaxbar^2):", sigma2_xbar, "\n")
+cat("sigmaxbar^2 ≈ sigma^2 / 2:", sigma2 / 2, "\n")
+```
+
+## Plot sampling distribution
+```{r}
+library(ggplot2)
+ggplot(samples, aes(x = mean)) +
+  geom_histogram(aes(y = ..density..), bins = 5, fill = "skyblue", color = "black") +
+  geom_density(alpha = 0.2, fill = "blue") +
+  labs(title = "Distribution of x̄ for n = 2",
+       x = "x̄ (Sample Mean)",
+       y = "Probability Density") +
+  theme_minimal()
+```
+
+---
+
+# Problem 8.21
+## (a). Population mean and variance
+```{r}
+# Population
+population <- c(3, 7, 11, 15)
+
+# Population mean (μ)
+mu <- mean(population)
+
+# Population variance (σ²) and standard deviation (σ)
+sigma2 <- var(population)  # sample variance, same as population variance formula for this exercise
+sigma <- sqrt(sigma2)
+
+cat("Population mean (μ):", mu, "\n")
+cat("Population variance (σ²):", sigma2, "\n")
+cat("Population standard deviation (σ):", sigma, "\n")
+```
+## (b). Generate all possible samples of size 2 (with replacement)
+```{r}
+# All combinations of 3, 7, 11, 15 with replacement
+samples <- expand.grid(A = population, B = population)
+
+# Compute sample means
+samples$mean <- rowMeans(samples)
+
+# Each sample equally likely → probability = 1 / (number of samples)
+samples$p_xbar <- 1 / nrow(samples)
+
+# Compute x̄ * p(x̄) and x̄² * p(x̄)
+samples$xbar_p <- samples$mean * samples$p_xbar
+samples$xbar2_p <- (samples$mean^2) * samples$p_xbar
+
+# Show table
+samples
+```
+## (c). Mean of the sampling distribution of means (μₓ̄) 
+```{r}
+mu_xbar <- sum(samples$xbar_p)
+cat("Mean of sampling distribution (μₓ̄):", mu_xbar, "\n")
+```
+## (d). Standard deviation of the sampling distribution of means (σₓ̄) 
+```{r}
+# Variance of sampling distribution
+sigma2_xbar <- sum(samples$xbar2_p) - mu_xbar^2
+sigma_xbar <- sqrt(sigma2_xbar)
+
+cat("Variance of sampling distribution (σₓ̄²):", sigma2_xbar, "\n")
+cat("Standard deviation of sampling distribution (σₓ̄):", sigma_xbar, "\n")
+```
+## (e). Verification: σₓ̄ = σ / √n
+```{r}
+n <- 2
+sigma_xbar_formula <- sigma / sqrt(n)
+
+cat("σₓ̄ (computed):", sigma_xbar, "\n")
+cat("σ / √n (formula):", sigma_xbar_formula, "\n")
+```
+## (f). Plot the sampling distribution of the mean
+```{r}
+library(ggplot2)
+ggplot(samples, aes(x = mean)) +
+  geom_histogram(aes(y = ..density..), bins = 8, fill = "lightblue", color = "black") +
+  geom_density(alpha = 0.2, fill = "blue") +
+  labs(title = "Sampling Distribution of x̄ (n = 2)",
+       x = "x̄ (Sample Mean)",
+       y = "Probability Density") +
+  theme_minimal()
+```
+---
 # Problem 8.34
 ```{r results='asis'}
 # Given values
