@@ -108,10 +108,14 @@ hist(data$Hours, breaks = 10, col = "lightgreen",
      main = "Histogram of Cell Phone Usage (All Students)",
      xlab = "Hours per Week")
 ```
+\begin{center}
 ![Boxplot of Cell Phone Usage by Gender](SA1_Files/boxplot.png)
+\end{center}
 
-
+\begin{center}
 ![Histogram of Cell Phone Usage](SA1_Files/histogram.png)
+\end{center}
+
 
 
 ## Report Summary
