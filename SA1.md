@@ -127,7 +127,9 @@ This analysis compared the average hours spent on cell phone calls per week betw
 - Female Mean Hours: `r round(mean(females), 2)` | SD: `r round(sd(females), 2)`
 ```
 • Overall Mean Hours: 9.76
+
 • Male Mean Hours: 9.82 | SD: 2.15
+
 • Female Mean Hours: 9.7 | SD: 1.78
 
 **Interpretation**
