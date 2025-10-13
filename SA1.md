@@ -8,6 +8,16 @@ TAGAYTAY, GABRIEL
 
 Date: October 11, 2025
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r github_link, echo=FALSE, results='asis'}
+cat("\\textbf{GITHUB LINK:} https://github.com/eivra-sm/APM1111/blob/main/SA1.md")
+```
+
+# PROBLEM I
+
 ## Given Data
 ```{r}
 males <- c(
@@ -109,31 +119,102 @@ hist(data$Hours, breaks = 10, col = "lightgreen",
      xlab = "Hours per Week")
 ```
 
-
-![Boxplot of Cell Phone Usage by Gender](SA1_Files/boxplot.png)
-
-![Histogram of Cell Phone Usage](SA1_Files/histogram.png)
-
-
-
 ## Report Summary
 
 This analysis compared the average hours spent on cell phone calls per week between male and female students.
 
 **Descriptive Overview**
-```{r}
+
 - Overall Mean Hours: `r round(mean(data$Hours), 2)`
 - Male Mean Hours: `r round(mean(males), 2)` | SD: `r round(sd(males), 2)`
 - Female Mean Hours: `r round(mean(females), 2)` | SD: `r round(sd(females), 2)`
-```
-• Overall Mean Hours: 9.76
-
-• Male Mean Hours: 9.82 | SD: 2.15
-
-• Female Mean Hours: 9.7 | SD: 1.78
 
 **Interpretation**
 
 Based on the results, `r if (mean(males) > mean(females)) {"male students spend slightly more hours per week on phone calls compared to females."} else if (mean(females) > mean(males)) {"female students spend slightly more hours per week on phone calls compared to males."} else {"both genders spend approximately the same amount of time on phone calls."}`  
 
 This report provides a descriptive overview of cell phone usage behavior by gender and may serve as a foundation for further statistical testing or behavioral analysis.
+
+\newpage
+# PROBLEM II  
+## Given Data
+```{r}
+x <- c(2, 3, 7, 8, 10)
+n <- length(x)
+```
+
+## Raw Moments about the Origin
+```{r}
+m1_prime <- mean(x)
+m2_prime <- mean(x^2)
+m3_prime <- mean(x^3)
+m4_prime <- mean(x^4)
+
+data.frame(
+  Moment = c("m1'", "m2'", "m3'", "m4'"),
+  Value = c(m1_prime, m2_prime, m3_prime, m4_prime)
+)
+```
+
+## Moments about the Mean (Central Moments)
+```{r}
+m1 <- mean(x - m1_prime)
+m2 <- mean((x - m1_prime)^2)
+m3 <- mean((x - m1_prime)^3)
+m4 <- mean((x - m1_prime)^4)
+
+data.frame(
+  Moment = c("m1", "m2", "m3", "m4"),
+  Value = c(m1, m2, m3, m4)
+)
+```  
+
+
+## Verification
+```{r}
+lhs <- m4
+rhs <- m4_prime - 4*m1_prime*m3_prime + 6*m1_prime^2*m2_prime - 3*m1_prime^4
+
+data.frame(
+  Expression = c("m4 (computed)", "Formula Result"),
+  Value = c(lhs, rhs),
+  Verified = ifelse(abs(lhs - rhs) < 1e-6, "Verified", "Not Verified")
+)
+```  
+
+
+# PROBLEM III  
+Prove that  
+\[
+m_4' = m_4 + 4h m_3 + 6h^2 m_2 + h^4, \quad \text{where } h = m_1'
+\]  
+
+```{r}
+# Given values from previous computations
+x <- c(2, 3, 7, 8, 10)
+m1_prime <- mean(x)
+m2_prime <- mean(x^2)
+m3_prime <- mean(x^3)
+m4_prime <- mean(x^4)
+
+# Compute central moments about the mean
+m1 <- mean(x - m1_prime)
+m2 <- mean((x - m1_prime)^2)
+m3 <- mean((x - m1_prime)^3)
+m4 <- mean((x - m1_prime)^4)
+
+# Define h = m1'
+h <- m1_prime
+
+# Compute right-hand side of the formula
+rhs <- m4 + 4*h*m3 + 6*h^2*m2 + h^4
+
+# Compare m4' and RHS
+proof_table <- data.frame(
+  Expression = c("m4'", "m4 + 4h*m3 + 6h^2*m2 + h^4"),
+  Value = c(m4_prime, rhs),
+  Verified = ifelse(abs(m4_prime - rhs) < 1e-6, "Proven", "Not Proven")
+)
+
+proof_table
+```
