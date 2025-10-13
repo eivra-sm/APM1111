@@ -8,9 +8,8 @@ TAGAYTAY, GABRIEL
 
 Date: October 11, 2025
 
-```{r github_link, echo=FALSE, results='asis'}
-cat("\\textbf{GITHUB LINK:} https://github.com/eivra-sm/APM1111/blob/main/SA1.md")
-```
+GITHUB LINK: https://github.com/eivra-sm/APM1111/blob/main/SA1.md
+
 
 # PROBLEM I
 
@@ -114,6 +113,9 @@ hist(data$Hours, breaks = 10, col = "lightgreen",
      main = "Histogram of Cell Phone Usage (All Students)",
      xlab = "Hours per Week")
 ```
+![Boxplot of Cell Phone Usage by Gender](SA1_Files/boxplot.png)
+
+![Histogram of Cell Phone Usage](SA1_Files/histogram.png)
 
 ## Report Summary
 
