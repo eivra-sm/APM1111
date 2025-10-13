@@ -8,10 +8,6 @@ TAGAYTAY, GABRIEL
 
 Date: October 11, 2025
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ```{r github_link, echo=FALSE, results='asis'}
 cat("\\textbf{GITHUB LINK:} https://github.com/eivra-sm/APM1111/blob/main/SA1.md")
 ```
