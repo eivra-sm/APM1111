@@ -207,7 +207,7 @@ boxplot(Mischief ~ Cloak, data = data,
         xlab = "Cloak Condition",
         col = c("lightblue", "lightgreen"))
 ```
-
+![Boxplot of Mischief](FA8_Files/Assumption4.png)
 **Explanation:** 
 The analysis for Assumption 4 checked for outliers in the Mischief scores across the two cloak conditions. Using the Tukey method, the lower and upper fences were calculated for each group, and all data points fell within these fences, indicating no extreme values. Additionally, the z-score method also confirmed that no participant had a score more than 3 standard deviations from the group mean. Visual inspection of the boxplots further supported this, showing that all points were within the whiskers with no isolated outliers. Together, these results confirm that the dataset does not contain significant outliers, satisfying Assumption 4 and ensuring that subsequent analyses will not be unduly influenced by extreme values.
 
@@ -238,6 +238,7 @@ qqnorm(mischief_with_cloak, main = "Q–Q Plot (With a Cloak)")
 qqline(mischief_with_cloak, col = "red", lwd = 2)
 par(mfrow = c(1,1))
 ```
+![Graph for Assumption 5](FA8_Files/Assumption5.png)
 
 **Explanation:** 
 The results of the Shapiro–Wilk tests indicate that the data meet the assumption of normality. Specifically, for participants without a cloak, the test produced a W value of 0.913 with a p-value of 0.231, while for participants with a cloak, the W value was 0.973 with a p-value of 0.936. Since both p-values exceed the 0.05 significance level, we fail to reject the null hypothesis of normality. This suggests that the Mischief scores are approximately normally distributed under both cloak conditions.
