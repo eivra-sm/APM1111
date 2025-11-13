@@ -39,6 +39,9 @@ We now check Assumptions 1 to 5. Each assumption is stated, explained, and teste
 # Check the data type of Mischief
 str(data$Mischief)
 ```
+```
+ num [1:24] 3 1 5 4 6 4 6 2 0 5 ...
+```
 **Explanation:**
 This assumption requires that the dependent variable (Mischief, the number of mischievous acts) is measured
 on a continuous scale (e.g., ratio or interval level). In this dataset, Mischief is a count of acts, which can
