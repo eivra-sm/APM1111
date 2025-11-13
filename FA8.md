@@ -25,6 +25,15 @@ data <- data.frame(
 # Displaying the first few rows to verify
 head(data)
 ```
+```
+## Participant Cloak Mischief
+## 1         1      0       3
+## 2         2      0       1
+## 3         3      0       5
+## 4         4      0       4
+## 5         5      0       6
+## 6         6      0       4
+```
 
 The data consists of 24 participants: 12 without a cloak (Cloak = 0) and 12 with a cloak (Cloak = 1). Mischief is the dependent variable (continuous scores).
 
@@ -40,7 +49,7 @@ We now check Assumptions 1 to 5. Each assumption is stated, explained, and teste
 str(data$Mischief)
 ```
 ```
- num [1:24] 3 1 5 4 6 4 6 2 0 5 ...
+## num [1:24] 3 1 5 4 6 4 6 2 0 5 ... num [1:24] 3 1 5 4 6 4 6 2 0 5 ...
 ```
 **Explanation:**
 This assumption requires that the dependent variable (Mischief, the number of mischievous acts) is measured
@@ -61,6 +70,11 @@ nature of their data to ensure the most appropriate statistical method is chosen
 # Check the levels of Cloak and group sizes
 table(data$Cloak)
 ```
+```
+ ##
+ ## 0 1
+ ## 12 12
+```
 
 **Explanation:**
 The independent variable (Cloak) must be categorical with exactly two independent groups, and participants
@@ -80,9 +94,40 @@ is vital to maintain the integrity of the statistical inference drawn from the t
 ```{r}
 # Checking for unique participants
 length(unique(data$Participant)) == nrow(data)  # Should be TRUE
-
+```
+```
+ ## [1] TRUE
+```{r}
 # Checking that no participant is in both groups (though unlikely with unique IDs)
 table(data$Participant, data$Cloak)  # Should show 1 in one column per row
+```
+```
+ ##
+ ##   0 1
+ ## 1 1 0
+ ## 2 1 0
+ ## 3 1 0
+ ## 4 1 0
+ ## 5 1 0
+ ## 6 1 0
+ ## 7 1 0
+ ## 8 1 0
+ ## 9 1 0
+ ## 10 1 0
+ ## 11 1 0
+ ## 12 1 0
+ ## 13 0 1
+ ## 14 0 1
+ ## 15 0 1
+ ## 16 0 1
+ ## 17 0 1
+ ## 18 0 1
+ ## 19 0 1
+ ## 20 0 1
+ ## 21 0 1
+ ## 22 0 1
+ ## 23 0 1
+ ## 24 0 1
 ```
 
 **Explanation:** 
