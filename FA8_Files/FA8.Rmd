@@ -1,0 +1,68 @@
+---
+title: "FA8: Independent Samples t-Test for Invisibility Cloak Dataset"
+author: "Tagaytay, Gabriel L., Sinocruz, Arvie M."
+date: "2025-11-13"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Independent Samples t-Test: Invisibility Cloak Dataset
+This report performs an independent samples t-test to compare the mean number of mischievous acts (Mischief) between two groups: participants without an invisibility cloak (Cloak = 0) and participants with an invisibility cloak (Cloak = 1). The analysis follows the specified assumptions (1 to 5 only) and includes the computation of the t-test.  
+
+## Data Loading and Preparation 
+The dataset is provided as a table of participants, their cloak status, and mischief scores. We load it into R as a data frame for analysis.
+
+```{r}
+# Create the dataset as a data frame
+data <- data.frame(
+  Participant = 1:24,
+  Cloak = c(0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1),
+  Mischief = c(3,1,5,4,6,4,6,2,0,5,4,5,4,3,6,6,8,5,5,4,2,5,7,5)
+)
+
+# Display the first few rows to verify
+head(data)
+```
+
+The data consists of 24 participants: 12 without a cloak (Cloak = 0) and 12 with a cloak (Cloak = 1). Mischief is the dependent variable (continuous scores).
+
+## Assumption Checks  
+We now check Assumptions 1 to 5. Each assumption is stated, explained, and tested where applicable.
+
+# Assumption 1: The dependent variable (Mischief) is measured at a continuous level.  
+**Explanation:**
+
+This assumption requires that the dependent variable (Mischief, the number of mischievous acts) is measured on a continuous scale (e.g., ratio or interval level). In this dataset, Mischief is a count of acts, which can be treated as continuous for parametric tests like the t-test, especially with a reasonable sample size (n=24 total, 12 per group). No statistical test is needed here; it's a design check. If Mischief were ordinal or categorical, a non-parametric test would be required instead.
+
+```{r}
+# Check the data type of Mischief
+str(data$Mischief)
+```
+
+Mischief is numeric (continuous), satisfying Assumption 1.
+
+# Assumption 2: The independent variable (Cloak) consists of two categorical, independent groups (Without a cloak, With a cloak).
+**Explanation:**
+
+The independent variable (Cloak) must be categorical with exactly two independent groups, and participants must be randomly assigned or naturally independent. Here, Cloak has two levels: 0 (without cloak) and 1 (with cloak). These groups are independent because each participant is in only one group, and there's no pairing or relationship between groups. This is a design assumption; violation would require a different test (e.g., paired t-test).
+
+```{r}
+# Check the levels of Cloak and group sizes
+table(data$Cloak)
+```
+
+There are two groups: 12 participants without a cloak and 12 with a cloak, satisfying Assumption 2.
+
+# Assumption 3: Each participant is present in only one group.
+**Explanation:** 
+
+```{r}
+# Check for unique participants
+length(unique(data$Participant)) == nrow(data)  # Should be TRUE
+
+# Check that no participant is in both groups (though unlikely with unique IDs)
+table(data$Participant, data$Cloak)  # Should show 1 in one column per row
+```
