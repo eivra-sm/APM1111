@@ -207,7 +207,51 @@ boxplot(Mischief ~ Cloak, data = data,
         xlab = "Cloak Condition",
         col = c("lightblue", "lightgreen"))
 ```
+```
+## # A tibble: 2 x 10
+## Cloak n mean median sd min max Q1 Q3 IQR
+## <fct> <int> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
+## 1 Without a cloak 12 3.75 4 1.91 0 6 2.75 5 2.25
+## 2 With a cloak 12 5 5 1.65 2 8 4 6 2
+```
+```
+## # A tibble: 2 x 12
+## Cloak n mean median sd min max Q1 Q3 IQR lower_fence
+## <fct> <int> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
+## 1 Without a ~ 12 3.75 4 1.91 0 6 2.75 5 2.25 -0.625
+## 2 With a clo~ 12 5 5 1.65 2 8 4 6 2 1
+## # i 1 more variable: upper_fence <dbl>
+```
+```
+## [1] "Outliers (Tukey method):"
+## # A tibble: 0 x 5
+## # Rowwise:
+## # i 5 variables: Participant <int>, Cloak <fct>, Mischief <dbl>,
+## # lower_fence <dbl>, upper_fence <dbl>
+```
+```
+## [1] "Outliers (z-score method, abs(z)>3):"
+## # A tibble: 0 x 6
+## # Groups: Cloak [0]
+## # i 6 variables: Participant <int>, Cloak <fct>, Mischief <dbl>, mean_g <dbl>,
+## # sd_g <dbl>, z <dbl>
+```
+```
+##
+## Shapiro-Wilk normality test
+##
+## data: mischief_no_cloak
+## W = 0.91276, p-value = 0.2314
+```
+```
+##
+## Shapiro-Wilk normality test
+##
+## data: mischief_with_cloak
+## W = 0.97262, p-value = 0.9362
+```
 ![Boxplot of Mischief](FA8_Files/Assumption4.png)
+
 **Explanation:** 
 The analysis for Assumption 4 checked for outliers in the Mischief scores across the two cloak conditions. Using the Tukey method, the lower and upper fences were calculated for each group, and all data points fell within these fences, indicating no extreme values. Additionally, the z-score method also confirmed that no participant had a score more than 3 standard deviations from the group mean. Visual inspection of the boxplots further supported this, showing that all points were within the whiskers with no isolated outliers. Together, these results confirm that the dataset does not contain significant outliers, satisfying Assumption 4 and ensuring that subsequent analyses will not be unduly influenced by extreme values.
 
@@ -237,6 +281,18 @@ hist(mischief_with_cloak, main = "Histogram of Mischief\n(With a Cloak)",
 qqnorm(mischief_with_cloak, main = "Q–Q Plot (With a Cloak)")
 qqline(mischief_with_cloak, col = "red", lwd = 2)
 par(mfrow = c(1,1))
+```
+```
+	Shapiro-Wilk normality test
+
+data:  mischief_no_cloak
+W = 0.91276, p-value = 0.2314
+```
+```
+	Shapiro-Wilk normality test
+
+data:  mischief_with_cloak
+W = 0.97262, p-value = 0.9362
 ```
 ![Graph for Assumption 5](FA8_Files/Assumption5.png)
 
