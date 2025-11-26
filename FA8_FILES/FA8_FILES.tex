@@ -1,0 +1,232 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Formative Assessment 8},
+  pdfauthor={Sinocruz, A \& Tagaytay, G},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Formative Assessment 8}
+\author{Sinocruz, A \& Tagaytay, G}
+\date{2025-11-26}
+
+\begin{document}
+\maketitle
+
+github link:
+
+\subsection{Assumptions}\label{assumptions}
+
+\subsubsection{Assumption \#1: You have one dependent variable that is
+measured at the continuous
+level.}\label{assumption-1-you-have-one-dependent-variable-that-is-measured-at-the-continuous-level.}
+
+\textbf{Remark.} The dependent variable is \emph{weight}, which measures
+dried plant weight in grams. This dependent variable is continuous.
+
+\subsubsection{Assumption \#2: You have one independent variable that
+consists of three or more categorical, independent
+groups.}\label{assumption-2-you-have-one-independent-variable-that-consists-of-three-or-more-categorical-independent-groups.}
+
+\textbf{Remark.} The independent variable is \emph{group}, which has
+three categorical levels: \textbf{ctrl}, \textbf{trt1}, and
+\textbf{trt2}.
+
+\subsubsection{Assumption \#3: You should have independence of
+observations.}\label{assumption-3-you-should-have-independence-of-observations.}
+
+\textbf{Remark.} Each plant was measured independently, and no plant
+appears in more than one group. The groups are independent experimental
+conditions.
+
+\subsubsection{Assumption \#4: There should be no significant outliers
+in the three groups of your independent variable in terms of the
+dependent
+variable.}\label{assumption-4-there-should-be-no-significant-outliers-in-the-three-groups-of-your-independent-variable-in-terms-of-the-dependent-variable.}
+
+\pandocbounded{\includegraphics[keepaspectratio]{FA8_FILES_files/figure-latex/unnamed-chunk-1-1.pdf}}
+
+\textbf{Remark.} There were no significant outliers in any of the three
+groups, as assessed by visual inspection of the raincloud/boxplots.
+
+\paragraph{Assumption \#5: The dependent variable should be
+approximately normally distributed for each group of the independent
+variable.}\label{assumption-5-the-dependent-variable-should-be-approximately-normally-distributed-for-each-group-of-the-independent-variable.}
+
+\begin{longtable}[t]{cccc}
+\caption{\label{tab:unnamed-chunk-2}Descriptive Statistics and Normality Tests by Group (Transposed)}\\
+\toprule
+\multicolumn{4}{c}{Weight (g)} \\
+\cmidrule(l{3pt}r{3pt}){1-4}
+ & ctrl & trt1 & trt2\\
+\midrule
+Valid & 10 & 10 & 10\\
+Missing & 0 & 0 & 0\\
+Mean & 5.032 & 4.661 & 5.526\\
+SD & 0.583 & 0.794 & 0.443\\
+Skewness & 0.231 & 0.474 & 0.485\\
+\addlinespace
+SE\_Skew & 0.775 & 0.775 & 0.775\\
+Kurtosis & -1.117 & -1.105 & -1.160\\
+SE\_Kurt & 1.549 & 1.549 & 1.549\\
+Shapiro\_Wilk & 0.957 & 0.930 & 0.941\\
+Shapiro\_p & 0.747 & 0.452 & 0.564\\
+\bottomrule
+\end{longtable}
+
+\textbf{Remark.} Since all p-values are greater than .05, the plant
+weights are approximately normally distributed for each group.
+
+\paragraph{Assumption \#6: Homogeneity of variances (i.e., the variance
+of the dependent variable is equal in each group of your independent
+variable).}\label{assumption-6-homogeneity-of-variances-i.e.-the-variance-of-the-dependent-variable-is-equal-in-each-group-of-your-independent-variable.}
+
+\begin{longtable}[t]{cccc}
+\caption{\label{tab:unnamed-chunk-3}Test for Equality of Variances (Levene's Test)}\\
+\toprule
+df1 & df2 & Statistic (F) & p-value\\
+\midrule
+2 & 27 & 1.1192 & 0.3412\\
+\bottomrule
+\end{longtable}
+
+\textbf{Remark.} There was homogeneity of variances, as assessed by
+Levene's test (p \textgreater{} .05).
+
+\paragraph{Computation}\label{computation}
+
+\begin{longtable}[t]{ccccccc}
+\caption{\label{tab:unnamed-chunk-4}ANOVA Table for Weight by Group}\\
+\toprule
+Source & DF & Sum of Squares & Mean Square & F & P & Partial Eta²\\
+\midrule
+group & 2 & 3.766 & 1.883 & 4.846 & 0.0159 & 0.264\\
+Residuals & 27 & 10.492 & 0.389 & NA & NA & NA\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[t]{lccc}
+\caption{\label{tab:unnamed-chunk-5}Descriptive Statistics of Weight by Group}\\
+\toprule
+group & Mean & SD & N\\
+\midrule
+ctrl & 5.032 & 0.583 & 10\\
+trt1 & 4.661 & 0.794 & 10\\
+trt2 & 5.526 & 0.443 & 10\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[t]{lcccccc}
+\caption{\label{tab:unnamed-chunk-6}Post-hoc Tukey HSD Comparison of Weight (Plant Growth)}\\
+\toprule
+\multicolumn{7}{c}{95\% CI for Mean Difference} \\
+\cmidrule(l{3pt}r{3pt}){1-7}
+Comparison & Mean Diff & Lower & Upper & SE & t & p\_Tukey\\
+\midrule
+ctrl - trt1 & -0.371 & -1.062 & 0.32 & 0.279 & -1.331 & 0.391\\
+ctrl - trt2 & 0.494 & -0.197 & 1.185 & 0.279 & 1.772 & 0.198\\
+trt1 - trt2 & 0.865 & 0.174 & 1.556 & 0.279 & 3.103 & 0.012\\
+\bottomrule
+\end{longtable}
+\newpage
+
+\subsection{Reporting}\label{reporting}
+
+A one-way ANOVA was conducted to determine whether plant weight differed
+among the three treatment groups (\emph{ctrl}, \emph{trt1},
+\emph{trt2}). The dependent variable was dried plant weight (in grams),
+and the independent variable consisted of three categorical, independent
+groups. There were no outliers in any group, as assessed by inspection
+of the boxplots. Plant weight was approximately normally distributed for
+each group, as assessed by Shapiro-Wilk tests (p \textgreater{} .05).
+Homogeneity of variances was confirmed by Levene's test (p
+\textgreater{} .05), indicating that the assumption of equal variances
+was met. Descriptive statistics showed that mean plant weight differed
+across groups: \textbf{ctrl} (M = 5.032, SD = 0.583), \textbf{trt1} (M =
+4.661, SD = 0.794), and \textbf{trt2} (M = 5.526, SD = 0.443). The
+one-way ANOVA revealed that mean plant weight was significantly
+different between treatment groups, \emph{F}(2, 27) = 4.846, \emph{p} =
+.016, partial \(\eta^2\) = .264. Tukey post hoc comparisons indicated
+that the mean weight for \textbf{trt2} was significantly higher than for
+\textbf{trt1} (mean difference = 0.864 g, 95\% CI {[}0.144, 1.584{]},
+\emph{p} = .016). However, the comparisons between \textbf{ctrl
+vs.~trt1} (mean difference = 0.371 g, 95\% CI {[}-0.348, 1.090{]},
+\emph{p} = .436) and \textbf{ctrl vs.~trt2} (mean difference = -0.494 g,
+95\% CI {[}-1.214, 0.226{]}, \emph{p} = .218) were not statistically
+significant. In summary, only the comparison between \textbf{trt1 and
+trt2} showed a statistically significant difference in plant weight,
+with the \textbf{trt2} group producing heavier plants on average.
+
+\end{document}
