@@ -1,0 +1,58 @@
+---
+title: "Formative Assessment 8"
+author: "Tagaytay, G., Sinocruz, A."
+date: "2025-11-26"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```  
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(ggdist)
+```
+
+```{r load-data}
+df <- PlantGrowth
+```
+
+github link: 
+
+## ASSUMPTIONS
+
+### Assumption #2: You have one independent variable that consists of three or more categorical, independent groups.
+
+**Remarks:** The independent variable in this study is **group**, which is a categorical factor with **three distinct and non-overlapping levels:** _ctrl_, _trt1_, and _trt2_. Each level represents a separate treatment condition applied to different sets of plants. Because the levels are mutually exclusive and clearly defined, this assumption is fully satisfied. The structure of the grouping variable is appropriate for conducting a one-way ANOVA, which requires at least three independent groups for comparison.  
+
+### Assumption #3: You should have independence of observations.
+
+**Remarks:** The observations in this dataset meet the requirement of independence. Each plant was grown, measured, and assigned to a treatment condition separately, with **each individual plant** contributing only one weight measurement. There is no repeated measurement, pairing, or clustering within the dataset. Since no plant appears in more than one group and there is no interaction among measurement units that would affect their outcomes, the independence assumption crucial for the validity of ANOVA is considered to be met.  
+
+### Assumption #4: There should be no significant outliers in the three groups of your independent variable in terms of the dependent variable.  
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(df, aes(x = group, y = weight, fill = group)) +
+  ggdist::stat_halfeye(
+    adjust = .7, width = .6, .width = 0,
+    justification = -0.3, point_colour = NA
+  ) +
+  geom_boxplot(width = .25, outlier.shape = NA, alpha = 0.5) +
+  geom_jitter(width = .05, alpha = 0.8) +
+  scale_fill_manual(values = c(
+    "ctrl" = "#A6CEE3",
+    "trt1" = "#B2DF8A",
+    "trt2" = "#FDBF6F"
+  )) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Raincloud Plot of Plant Weights by Group",
+    x = "Group",
+    y = "Plant Weight (g)"
+  )
+
+```  
+
+**Remarks:** The raincloud plot—which combines density plots, boxplots, and jittered raw data—was inspected to assess the presence of outliers in each group. The boxplots show that **no data points fall beyond the whiskers**, and the jittered points appear consistent with the distribution of the rest of the group. This visual assessment indicates that there are **no extreme or influential outliers** that could distort the group means or affect the ANOVA results. Therefore, the assumption of no significant outliers is satisfied.
