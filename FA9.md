@@ -7,7 +7,7 @@ output:
     latex_engine: lualatex
 ---
 
-Github Link: 
+Github Link: https://github.com/eivra-sm/APM1111/blob/main/FA9.md
 
 ## Introduction 
 
@@ -260,6 +260,7 @@ df <- crop_yield %>%
   mutate(Fertilizer = as.factor(Fertilizer),
          Crop = as.factor(Crop))
 
+# Function that computes descriptive statistics
 compute_desc <- function(data, group_var) {
   data %>%
     group_by(.data[[group_var]]) %>%
@@ -279,6 +280,10 @@ compute_desc <- function(data, group_var) {
     pivot_wider(names_from = !!sym(group_var), values_from = Value) %>%
     mutate(across(-Statistic, ~ round(as.numeric(.), 3)))
 }
+
+# Create the two required objects
+desc_by_fertilizer <- compute_desc(df, "Fertilizer")
+desc_by_crop       <- compute_desc(df, "Crop")
 
 desc_by_fertilizer %>%
   kable(
