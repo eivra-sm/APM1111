@@ -1,0 +1,510 @@
+---
+title: "Formative Assessment 9"
+author: "Sinocruz, A & Tagaytay, G"
+date: "2025-12-02"
+output:
+  pdf_document:
+    latex_engine: lualatex
+---
+
+Github Link: 
+
+## Introduction 
+
+A study was conducted to determine whether crop yield is influenced by (1) fertilizer blend (X, Y, Z) and (2) crop type (wheat, corn, soy, rice). A two-way ANOVA was used to test for:
+
+-   A main effect of fertilizer blend,
+
+-   A main effect of crop type,
+
+-   An interaction between fertilizer blend × crop type
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE
+)
+
+library(car)
+
+
+library(tidyverse)
+library(rstatix)
+library(kableExtra)
+library(psych)
+
+crop_yield <- tribble(
+  ~Fertilizer, ~Wheat, ~Corn, ~Soy, ~Rice,
+  "Blend X", 123, 128, 166, 151,
+  "Blend X", 156, 150, 178, 125,
+  "Blend X", 112, 174, 187, 117,
+  "Blend X", 100, 116, 153, 155,
+  "Blend X", 168, 109, 195, 158,
+  "Blend Y", 135, 175, 140, 167,
+  "Blend Y", 130, 132, 145, 183,
+  "Blend Y", 176, 120, 159, 142,
+  "Blend Y", 120, 187, 131, 167,
+  "Blend Y", 155, 184, 126, 168,
+  "Blend Z", 156, 186, 185, 175,
+  "Blend Z", 180, 138, 206, 173,
+  "Blend Z", 147, 178, 188, 154,
+  "Blend Z", 146, 176, 165, 191,
+  "Blend Z", 193, 190, 188, 169
+)
+
+df <- crop_yield %>% 
+  pivot_longer(cols = Wheat: Rice, names_to = "Crop", values_to = "Yield")
+
+df$Fertilizer <- as.factor(df$Fertilizer)
+df$Crop <- as.factor(df$Crop)
+
+
+```
+
+## **Assumptions**
+
+When you choose to analyse your data using a two-way ANOVA, part of the process involves checking to make sure that the data you want to analyse can actually be analysed using a two-way ANOVA. You need to do this because it is only appropriate to use a two-way ANOVA if your data "passes" six assumptions that are required for a two-way ANOVA to give you a valid result.
+
+Below are the assumptions:
+
+**Assumption #1:** Your **dependent variable** should be measured at the **continuous** level (i.e., they are **interval** or **ratio** variables).
+
+**Assumption #2:** Your **two independent variables** should each consist of **two or more categorical**, **independent groups**.
+
+**Assumption #3:** You should have **independence of observations**, which means that there is no relationship between the observations in each group or between the groups themselves.  
+
+**Assumption #4:** There should be **no significant outliers**.  
+
+**Assumption #5:** Your **dependent variable** should be **approximately normally distributed for each combination of the groups of the two independent variables**.  
+
+**Assumption #6:** There needs to be **homogeneity of variances for each combination of the groups of the two independent variables**.  
+
+## Null hypothesis:
+
+There is no significant interaction effect on yield between fertilizer and crop.
+
+## Problem:
+
+A new fertilizer has been developed to increase the yield on crops, and the makers of the fertilizer want to better understand which of the three formulations (blends) of this fertilizer are most effective for wheat, corn, soybeans and rice (crops). They test each of the three blends on 5 samples of each of the four types of crops. The crop yields for the 12 combinations are as shown in the table below.
+
+```{r}
+df %>%
+kable(caption = "Crop Yield Data (Long Format)", digits = 0) %>%
+kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+```
+
+
+
+## Assumptions Check
+
+**Assumption #1: The dependent variable, crop yield, is measured at the continuous level.**
+
+**Assumption #2: The two independent variables, fertilizer type (Blend X, Blend Y, Blend Z) and crop type (Wheat, Corn, Soy, Rice), each consist of two or more categorical, independent groups.**
+
+**Assumption #3: The independence of observation is observed.**
+
+**Assumption #4: There are no significant outliers in each of the 12 cells of the design.**
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(ggplot2)
+library(ggdist)
+
+# Your data
+df <- tribble(
+  ~Fertilizer, ~Wheat, ~Corn, ~Soy, ~Rice,
+  "Blend X", 123, 128, 166, 151,
+  "Blend X", 156, 150, 178, 125,
+  "Blend X", 112, 174, 187, 117,
+  "Blend X", 100, 116, 153, 155,
+  "Blend X", 168, 109, 195, 158,
+  "Blend Y", 135, 175, 140, 167,
+  "Blend Y", 130, 132, 145, 183,
+  "Blend Y", 176, 120, 159, 142,
+  "Blend Y", 120, 187, 131, 167,
+  "Blend Y", 155, 184, 126, 168,
+  "Blend Z", 156, 186, 185, 175,
+  "Blend Z", 180, 138, 206, 173,
+  "Blend Z", 147, 178, 188, 154,
+  "Blend Z", 146, 176, 165, 191,
+  "Blend Z", 193, 190, 188, 169
+)
+
+df_long <- df %>%
+  pivot_longer(cols = Wheat: Rice, names_to = "Crop", values_to = "Yield")
+
+df_long$Fertilizer <- as.factor(df_long$Fertilizer)
+df_long$Crop <- as.factor(df_long$Crop)
+
+ggplot(df_long, aes(x = Fertilizer, y = Yield, fill = Crop, color = Crop)) +
+  ggdist::stat_halfeye(
+    adjust = 0.7, width = 0.6, .width = 0,
+    justification = 0.3,   # shift half-eye to the right
+    point_colour = NA,
+    position = position_dodge(width = 0.8)
+  ) +
+  geom_boxplot(
+    width = 0.25, outlier.shape = NA, alpha = 0.5,
+    position = position_dodge(width = 0.8)
+  ) +
+  geom_jitter(
+    alpha = 0.8,
+    position = position_dodge(width = 0.8)
+  ) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Raincloud Plot of Crop Yield by Fertilizer",
+    x = "Fertilizer",
+    y = "Yield"
+  ) +
+  scale_fill_brewer(palette = "Set2") +
+  scale_color_brewer(palette = "Set2") +
+  theme(legend.position = "right")  # legend on the right like JASP
+
+```
+
+**Assumption #5: The dependent variable, crop yield, is approximately normally distributed for each combination of the groups of fertilizer type and crop type, as assessed by Shapiro–Wilk test of normality (p \> .05).**
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(psych)
+library(rstatix)
+library(kableExtra)
+
+# Your dataset
+crop_yield <- tribble(
+  ~Fertilizer, ~Wheat, ~Corn, ~Soy, ~Rice,
+  "Blend X", 123, 128, 166, 151,
+  "Blend X", 156, 150, 178, 125,
+  "Blend X", 112, 174, 187, 117,
+  "Blend X", 100, 116, 153, 155,
+  "Blend X", 168, 109, 195, 158,
+  "Blend Y", 135, 175, 140, 167,
+  "Blend Y", 130, 132, 145, 183,
+  "Blend Y", 176, 120, 159, 142,
+  "Blend Y", 120, 187, 131, 167,
+  "Blend Y", 155, 184, 126, 168,
+  "Blend Z", 156, 186, 185, 175,
+  "Blend Z", 180, 138, 206, 173,
+  "Blend Z", 147, 178, 188, 154,
+  "Blend Z", 146, 176, 165, 191,
+  "Blend Z", 193, 190, 188, 169
+)
+
+df <- crop_yield %>% 
+  pivot_longer(cols = Wheat: Rice, names_to = "Crop", values_to = "Yield") %>%
+  mutate(Fertilizer = as.factor(Fertilizer),
+         Crop = as.factor(Crop))
+
+compute_desc <- function(data, group_var) {
+  data %>%
+    group_by(.data[[group_var]]) %>%
+    summarise(
+      Valid = n(),
+      Mean = mean(Yield),
+      SD = sd(Yield),
+      Skewness = psych::skew(Yield)[1],
+      SE_Skew = sqrt(6/n()),
+      Kurtosis = psych::kurtosi(Yield)[1],
+      SE_Kurt = sqrt(24/n()),
+      Shapiro_Wilk = shapiro_test(Yield)$statistic,
+      P_value = shapiro_test(Yield)$p,
+      .groups = "drop"
+    ) %>%
+    pivot_longer(-1, names_to = "Statistic", values_to = "Value") %>%
+    pivot_wider(names_from = !!sym(group_var), values_from = Value) %>%
+    mutate(across(-Statistic, ~ round(as.numeric(.), 3)))
+}
+
+desc_by_fertilizer <- compute_desc(df, "Fertilizer")
+desc_by_fertilizer %>%
+  kable(
+    caption = "Descriptive Statistics of Yield by Fertilizer",
+    align = "c"
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+desc_by_crop <- compute_desc(df, "Crop")
+desc_by_crop %>%
+  kable(
+    caption = "Descriptive Statistics of Yield by Crop",
+    align = "c"
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+```
+
+**Assumption #6: The variances for each combination of the groups of fertilizer type and crop type are homogeneous, as assessed by Levene’s test of equality of variances, p = 0.755.**
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+levene_test_result <- df %>%
+  levene_test(Yield ~ Fertilizer * Crop)
+
+levene_test_result %>%
+  rename(
+    F = statistic,
+    df1 = df1,
+    df2 = df2,
+    p = p
+  ) %>%
+  kable(
+    caption = "Test for Equality of Variances (Levene's Test)",
+    digits = 3,
+    align = "c"
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+```
+
+## Computation
+```{r anova_table, results='asis'}
+
+library(car)
+library(effectsize)
+library(kableExtra)
+library(tidyverse)
+
+# Type III ANOVA
+anova_res <- Anova(lm(Yield ~ Fertilizer * Crop, data = df), type = 3)
+
+# Convert ANOVA table to data frame
+anova_df <- as.data.frame(anova_res) %>%
+  rownames_to_column(var = "Cases")
+
+# Rename columns
+anova_table <- anova_df %>%
+  rename(
+    `Sum of Squares` = `Sum Sq`,
+    df = `Df`,
+    F = `F value`,
+    p = `Pr(>F)`
+  ) %>%
+  mutate(
+    `Mean Square` = `Sum of Squares` / df
+  )
+
+# Partial Eta Squared
+SS_error <- anova_table$`Sum of Squares`[anova_table$Cases == "Residuals"]
+anova_table$`Partial Eta Squared` <- anova_table$`Sum of Squares` /
+  (anova_table$`Sum of Squares` + SS_error)
+
+# Clean Cases names
+anova_table$Cases <- gsub("\\(|\\)", "", anova_table$Cases)
+
+# Arrange columns
+anova_table <- anova_table %>%
+  select(Cases, `Sum of Squares`, df, `Mean Square`, F, p, `Partial Eta Squared`)
+
+# Print LaTeX table
+kable(
+  anova_table,
+  caption = "Two-way ANOVA Table (JASP-style, Type III SS)",
+  digits = 3,
+  format = "latex",
+  booktabs = TRUE
+) %>%
+  kable_styling(latex_options = c("hold_position"), full_width = FALSE)
+
+```
+
+#### Remark:
+The results of the two-way ANOVA indicate that fertilizer blend, crop type, and their interaction all make statistically significant contributions to the variability in crop yield. The significant interaction effect implies that the influence of fertilizer blend on yield is not consistent across crop types. Therefore, interpreting the main effects in isolation would be insufficient; examination of simple main effects is warranted to understand how fertilizer performance differs depending on the crop.
+
+## Results of Simple Main Effects
+
+```{r}
+library(rstatix)
+library(dplyr)
+library(kableExtra)
+
+overall_aov <- aov(Yield ~ Fertilizer * Crop, data = df_long)
+MS_Error <- summary(overall_aov)[[1]][3, "Mean Sq"]
+
+simple_effects_fert <- df_long %>%
+  group_by(Crop) %>%
+  anova_test(Yield ~ Fertilizer) %>%
+  get_anova_table() %>%
+  as_tibble() %>%
+  select(Crop, Effect, DFn, DFd, F, p) %>%
+  rename(`Level of Crop` = Crop,
+         `Source` = Effect,
+         df = DFn) %>%
+  mutate(
+    `Mean Square` = F * MS_Error,
+    `Sum of Squares` = `Mean Square` * df
+  ) %>%
+  select(`Level of Crop`, `Sum of Squares`, df, `Mean Square`, F, p)
+
+simple_effects_fert %>%
+  kable(
+    caption = "Simple Main Effects of Fertilizer within Each Crop",
+    digits = 3
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+sme_means <- df %>%
+group_by(Fertilizer, Crop) %>%
+summarise(
+Mean_Yield = mean(Yield),
+SD = sd(Yield),
+N = n(),
+SE = SD/sqrt(N),
+.groups = "drop"
+)
+
+ggplot(sme_means, aes(x = Fertilizer, y = Mean_Yield, group = Crop, color = Crop)) +
+geom_line(size = 1) +
+geom_point(size = 3) +
+geom_errorbar(aes(ymin = Mean_Yield - SE, ymax = Mean_Yield + SE), width = 0.1) +
+theme_minimal(base_size = 14) +
+labs(
+title = "Simple Main Effects of Fertilizer within each Crop",
+x = "Fertilizer",
+y = "Mean Yield"
+) +
+scale_color_brewer(palette = "Set2") +
+theme(legend.position = "right")
+
+```
+
+#### Remark:
+The analysis of simple main effects reveals that the effect of fertilizer blend varies substantially across crop types. For certain crops, differences among fertilizer blends are pronounced, while for others the differences are relatively modest. This pattern reinforces the presence of a statistically significant interaction effect, indicating that no single fertilizer formulation is uniformly optimal across all crops. Instead, the effectiveness of a fertilizer appears to be crop-specific.
+
+#### 
+
+```{r}
+simple_effects_crop <- df_long %>%
+  group_by(Fertilizer) %>%
+  anova_test(Yield ~ Crop) %>%
+  get_anova_table() %>%
+  as_tibble() %>%
+  select(Fertilizer, Effect, DFn, DFd, F, p) %>%
+  rename(`Level of Fertilizer` = Fertilizer,
+         `Source` = Effect,
+         df = DFn) %>%
+  mutate(
+    `Mean Square` = F * MS_Error,
+    `Sum of Squares` = `Mean Square` * df
+  ) %>%
+  select(`Level of Fertilizer`, `Sum of Squares`, df, `Mean Square`, F, p)
+
+simple_effects_crop %>%
+  kable(
+    caption = "Simple Main Effects of Crop within Each Fertilizer",
+    digits = 3
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+sme_means2 <- df %>%
+group_by(Crop, Fertilizer) %>%
+summarise(
+Mean_Yield = mean(Yield),
+SD = sd(Yield),
+N = n(),
+SE = SD/sqrt(N),
+.groups = "drop"
+)
+
+ggplot(sme_means2, aes(x = Crop, y = Mean_Yield, group = Fertilizer, color = Fertilizer)) +
+geom_line(size = 1) +
+geom_point(size = 3) +
+geom_errorbar(aes(ymin = Mean_Yield - SE, ymax = Mean_Yield + SE), width = 0.1) +
+theme_minimal(base_size = 14) +
+labs(
+title = "Simple Main Effects of Crop within each Fertilizer",
+x = "Crop",
+y = "Mean Yield"
+) +
+scale_color_brewer(palette = "Set2") +
+theme(legend.position = "right")
+
+```
+
+#### Remark:
+The simple main effects of crop type within each fertilizer blend show that crop yield also varies depending on the fertilizer applied. These results indicate that each fertilizer blend favors certain crops more strongly than others. This further supports the conclusion that fertilizer efficacy is contingent upon crop type, strengthening the interpretation of a meaningful interaction between fertilizer formulation and crop species.
+
+## Partial Eta Squared
+
+```{r}
+eta_sq_res <- eta_squared(
+  lm(Yield ~ Fertilizer * Crop, data = df),
+  partial = TRUE
+)
+
+eta_sq_res %>%
+  rename(Effect = Parameter,
+         Partial_Eta_Sq = Eta2_partial) %>%
+  kable(caption = "Partial Eta Squared for Two-way ANOVA",
+        digits = 3) %>%
+  kable_styling(bootstrap_options = c("striped","hover","condensed"),
+                full_width = FALSE)
+
+```
+
+## Post Hoc Comparisons
+
+```{r posthoc, results='asis'}
+library(emmeans)
+library(kableExtra)
+library(dplyr)
+
+# Fit two-way ANOVA model
+model <- lm(Yield ~ Fertilizer * Crop, data = df_long)
+
+# --- Estimated Marginal Means ---
+emm_fert <- emmeans(model, ~ Fertilizer)
+emm_crop <- emmeans(model, ~ Crop)
+emm_interaction <- emmeans(model, ~ Fertilizer * Crop)
+
+# --- Pairwise Comparisons ---
+
+# 1. Fertilizer main effect
+pairwise_fert <- contrast(emm_fert, method = "pairwise", adjust = "tukey") %>% summary(infer = TRUE)
+pairwise_fert_df <- as.data.frame(pairwise_fert)
+
+# Print Fertilizer post hoc table
+pairwise_fert_df %>%
+  kable(
+    caption = "Post Hoc Pairwise Comparisons of Fertilizer (Tukey)",
+    digits = 3,
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(latex_options = c("hold_position"), full_width = FALSE)
+
+
+# 2. Crop main effect
+pairwise_crop <- contrast(emm_crop, method = "pairwise", adjust = "tukey") %>% summary(infer = TRUE)
+pairwise_crop_df <- as.data.frame(pairwise_crop)
+
+# Print Crop post hoc table
+pairwise_crop_df %>%
+  kable(
+    caption = "Post Hoc Pairwise Comparisons of Crop (Tukey)",
+    digits = 3,
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(latex_options = c("hold_position"), full_width = FALSE)
+
+
+# 3. Interaction: Fertilizer pairwise within each Crop
+pairwise_interaction <- contrast(emm_interaction, method = "pairwise", by = "Crop", adjust = "tukey") %>% summary(infer = TRUE)
+pairwise_interaction_df <- as.data.frame(pairwise_interaction)
+
+# Print Interaction post hoc table
+pairwise_interaction_df %>%
+  kable(
+    caption = "Post Hoc Pairwise Comparisons of Fertilizer within Each Crop (Tukey)",
+    digits = 3,
+    format = "latex",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(latex_options = c("hold_position"), full_width = FALSE)
+```
+
+\newpage
+
+## Results:
+Post hoc Tukey comparisons provide more detailed insight into which specific fertilizer blends and crop types differ from one another. These pairwise tests allow identification of the precise group differences driving the significant main effects. Combined with the interaction findings, the post hoc results highlight the complex pattern of differences across fertilizer–crop combinations, emphasizing that both factors must be considered jointly when making recommendations regarding fertilizer formulation.
