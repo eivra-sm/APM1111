@@ -1,8 +1,10 @@
 # Formative Assessment 8
 **Authors:**
+
 SINOCRUZ, ARVIE
 
 TAGAYTAY, GABRIEL
+
 **Date:** 2025-11-26
 
 ```{r setup, include=FALSE}
