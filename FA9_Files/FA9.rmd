@@ -369,7 +369,11 @@ theme(legend.position = "right")
 ```
 
 #### Remark:
-The analysis of simple main effects reveals that the effect of fertilizer blend varies substantially across crop types. For certain crops, differences among fertilizer blends are pronounced, while for others the differences are relatively modest. This pattern reinforces the presence of a statistically significant interaction effect, indicating that no single fertilizer formulation is uniformly optimal across all crops. Instead, the effectiveness of a fertilizer appears to be crop-specific.
+The analysis of simple main effects indicates that the impact of fertilizer blends varies considerably across different crop types. For some crops, differences among fertilizer treatments are substantial and statistically significant, reflecting a high sensitivity to the nutrient composition of the fertilizers. In contrast, other crops exhibit relatively minor differences, suggesting a more consistent response regardless of the fertilizer applied.
+
+These observations reinforce the presence of a significant interaction effect in the two-way ANOVA, highlighting that the effectiveness of a fertilizer cannot be generalized across all crops. No single fertilizer blend consistently maximizes yield for every crop; instead, each crop responds uniquely depending on its physiological characteristics and nutrient requirements.
+
+From an applied perspective, these findings emphasize the importance of crop-specific fertilizer management. Farmers and agronomists should avoid a “one-size-fits-all” approach and instead select fertilizer formulations tailored to the particular crop being cultivated. By aligning fertilizer selection with crop-specific responses, agricultural productivity can be optimized, and nutrient resources can be utilized more efficiently.
 
 #### 
 
@@ -422,7 +426,9 @@ theme(legend.position = "right")
 ```
 
 #### Remark:
-The simple main effects of crop type within each fertilizer blend show that crop yield also varies depending on the fertilizer applied. These results indicate that each fertilizer blend favors certain crops more strongly than others. This further supports the conclusion that fertilizer efficacy is contingent upon crop type, strengthening the interpretation of a meaningful interaction between fertilizer formulation and crop species.
+The analysis of simple main effects for crop type within each fertilizer blend demonstrates that crop yield varies substantially depending on the specific fertilizer applied. Certain fertilizer formulations appear to favor particular crops more strongly, resulting in higher yields for those crops, while other crops show more modest responses under the same fertilizer. This pattern indicates that the effectiveness of a fertilizer is not uniform across all crop types, but rather crop-specific, reflecting the unique nutrient requirements and growth characteristics of each crop.
+
+These results further reinforce the conclusion that there is a meaningful interaction between fertilizer formulation and crop species. The significant interaction implies that the optimal fertilizer choice depends on the crop in question, and that blanket recommendations for all crops may not maximize productivity. From a practical standpoint, these findings suggest the necessity of tailored fertilizer strategies that account for both crop type and fertilizer composition, thereby enabling more efficient nutrient management and improved overall yield.
 
 ## Partial Eta Squared
 
@@ -507,4 +513,4 @@ pairwise_interaction_df %>%
 \newpage
 
 ## Results:
-Post hoc Tukey comparisons provide more detailed insight into which specific fertilizer blends and crop types differ from one another. These pairwise tests allow identification of the precise group differences driving the significant main effects. Combined with the interaction findings, the post hoc results highlight the complex pattern of differences across fertilizer–crop combinations, emphasizing that both factors must be considered jointly when making recommendations regarding fertilizer formulation.
+Post hoc Tukey comparisons offer a more detailed understanding of the specific differences between fertilizer blends and crop types. These pairwise tests identify precisely which groups contribute to the significant main effects observed in the ANOVA. When considered alongside the significant interaction effects, the post hoc results reveal a complex pattern of variation across fertilizer–crop combinations. This underscores the importance of evaluating both factors simultaneously, rather than in isolation, when formulating fertilizer recommendations. By accounting for the unique responses of each crop to different fertilizers, these findings provide practical guidance for optimizing crop yields and improving nutrient management strategies.
