@@ -1,6 +1,8 @@
 # Formative Assessment 8
-## Author: "Sinocruz, A & Tagaytay, G"
-## Date: "2025-11-26"
+### Authors:
+SINOCRUZ, ARVIE
+TAGAYTAY, GABRIEL
+### Date: "2025-11-26"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
