@@ -63,21 +63,21 @@ df$Crop <- as.factor(df$Crop)
 
 ## **Assumptions**
 
-When you choose to analyse your data using a two-way ANOVA, part of the process involves checking to make sure that the data you want to analyse can actually be analysed using a two-way ANOVA. You need to do this because it is only appropriate to use a two-way ANOVA if your data "passes" six assumptions that are required for a two-way ANOVA to give you a valid result.
+Initiating a two-way ANOVA requires more than simply applying a formula to a dataset; it necessitates a rigorous preliminary evaluation to confirm the data’s suitability for this specific statistical model. This validation process is critical because the two-way ANOVA is a parametric test reliant on specific mathematical properties. Consequently, researchers must verify that their data adheres to six fundamental assumptions. Failure to meet these prerequisites can compromise the statistical power of the analysis, potentially leading to biased estimates or erroneous conclusions. Therefore, before interpreting any main effects or interactions, one must systematically demonstrate that the data "passes" these mandatory checks to ensure the resulting output is robust and scientifically valid.
 
 Below are the assumptions:
 
-**Assumption #1:** Your **dependent variable** should be measured at the **continuous** level (i.e., they are **interval** or **ratio** variables).
+**Assumption #1:** Your **dependent variable** must be **continuous** (measured on an interval or ratio scale, such as time, weight, or test scores).
 
-**Assumption #2:** Your **two independent variables** should each consist of **two or more categorical**, **independent groups**.
+**Assumption #2:** Your design must include exactly **two independent variables** that are **categorical**, with each variable containing **two or more independent groups** (levels).
 
-**Assumption #3:** You should have **independence of observations**, which means that there is no relationship between the observations in each group or between the groups themselves.  
+**Assumption #3:** You must ensure **independence of observations**, meaning that no participant is in more than one group and one participant's data does not influence another's.
 
-**Assumption #4:** There should be **no significant outliers**.  
+**Assumption #4:** The dataset must contain **no significant outliers**, as these extreme values can distort the mean and variance of your results.
 
-**Assumption #5:** Your **dependent variable** should be **approximately normally distributed for each combination of the groups of the two independent variables**.  
+**Assumption #5:** Your **dependent variable** must follow an **approximate normal distribution** (bell curve) for **each specific combination of the groups** formed by the two independent variables.
 
-**Assumption #6:** There needs to be **homogeneity of variances for each combination of the groups of the two independent variables**.  
+**Assumption #6:** There must be **homogeneity of variances** (homoscedasticity), meaning the spread or variability of the data is roughly equal across **every combination of the groups**.
 
 ## Null hypothesis:
 
@@ -89,19 +89,56 @@ A new fertilizer has been developed to increase the yield on crops, and the make
 
 ```{r}
 df %>%
-kable(caption = "Crop Yield Data (Long Format)", digits = 0) %>%
-kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  kable(
+    caption = "Crop Yield Data (Long Format)",
+    digits = 0
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE
+  ) %>%
+  row_spec(0, bold = TRUE) %>%
+  row_spec(
+    seq(1, nrow(df), 2), background = "#DFF2DF"
+  ) %>%
+  row_spec(
+    seq(2, nrow(df), 2), background = "#FFFFFF"
+  )
 ```
 
-
-
-## Assumptions Check
+## Checking of Assumptions
 
 **Assumption #1: The dependent variable, crop yield, is measured at the continuous level.**
 
+**Remark.** The first assumption of a two-way ANOVA requires that the dependent variable be measured on a continuous (interval or ratio) scale.
+In this study, the dependent variable is crop yield, recorded as the number of units produced by each crop under each fertilizer blend. Because yield is measured numerically and represents a meaningful quantity where differences between values are interpretable (e.g., a difference of 10 units represents the same increase anywhere on the scale), the variable meets the criteria for a ratio-level, continuous measure. This satisfies the requirement that the ANOVA operates on a continuous outcome variable.
+
 **Assumption #2: The two independent variables, fertilizer type (Blend X, Blend Y, Blend Z) and crop type (Wheat, Corn, Soy, Rice), each consist of two or more categorical, independent groups.**
 
+**Remark.** A two-way ANOVA requires two independent variables (factors), each containing distinct, non-overlapping categories.
+
+\begin{itemize}
+    \item The first factor is \textbf{Fertilizer Type}, which has three categorical groups:
+    \begin{itemize}
+        \item Blend X
+        \item Blend Y
+        \item Blend Z
+    \end{itemize}
+    
+    \item The second factor is \textbf{Crop Type}, which consists of four categorical groups:
+    \begin{itemize}
+        \item Wheat
+        \item Corn
+        \item Soy
+        \item Rice
+    \end{itemize}
+\end{itemize}
+
+Both variables meet the criteria for categorical grouping factors, and each observation belongs to one and only one level of each factor. There is no overlap between categories, and the groups are mutually exclusive. Therefore, this assumption is \textbf{fully met}.
+
 **Assumption #3: The independence of observation is observed.**
+
+**Remark.** In this study, each yield value represents a distinct crop sample treated with a specific fertilizer blend. The experimental design states that five independent samples were used for every combination of fertilizer and crop type. No sample appears in more than one condition, and fertilizer treatments were applied separately. Thus, the independence of observations is maintained by design.
 
 **Assumption #4: There are no significant outliers in each of the 12 cells of the design.**
 
@@ -139,7 +176,7 @@ df_long$Crop <- as.factor(df_long$Crop)
 ggplot(df_long, aes(x = Fertilizer, y = Yield, fill = Crop, color = Crop)) +
   ggdist::stat_halfeye(
     adjust = 0.7, width = 0.6, .width = 0,
-    justification = 0.3,   # shift half-eye to the right
+    justification = 0.3,
     point_colour = NA,
     position = position_dodge(width = 0.8)
   ) +
@@ -157,11 +194,38 @@ ggplot(df_long, aes(x = Fertilizer, y = Yield, fill = Crop, color = Crop)) +
     x = "Fertilizer",
     y = "Yield"
   ) +
-  scale_fill_brewer(palette = "Set2") +
-  scale_color_brewer(palette = "Set2") +
-  theme(legend.position = "right")  # legend on the right like JASP
+  scale_fill_manual(
+    values = c(
+      "Wheat" = "#1f77b4",  
+      "Corn"  = "#ffdd00",  
+      "Soy"   = "#2ca02c",  
+      "Rice"  = "#ff69b4"   
+    )
+  ) +
+  scale_color_manual(
+    values = c(
+      "Wheat" = "#1f77b4",
+      "Corn"  = "#ffdd00",
+      "Soy"   = "#2ca02c",
+      "Rice"  = "#ff69b4"
+    )
+  ) +
+  theme(legend.position = "right")
 
 ```
+
+**Remakr.** \noindent \textbf{Assumption Check: No Significant Outliers}
+
+A two-way ANOVA assumes that there are no extreme outliers in any of the factorial combinations (i.e., in each of the 12 cells created by 3 fertilizer levels $\times$ 4 crop types).
+
+Outliers were inspected using:
+\begin{itemize}
+    \item Raincloud plots (combining jittered points, boxplots, and density half-eyes),
+    \item Boxplot whisker rules, and
+    \item Visual examination of the distribution of values within each group.
+\end{itemize}
+
+These diagnostic visualizations revealed no severe deviations from expected values and no yield measurements that fell far outside the typical range for their group. Specifically, all observations fell within reasonable boundaries relative to their corresponding interquartile range and whisker limits. Therefore, the assumption of ``no significant outliers'' is \textbf{supported}.
 
 **Assumption #5: The dependent variable, crop yield, is approximately normally distributed for each combination of the groups of fertilizer type and crop type, as assessed by Shapiro–Wilk test of normality (p \> .05).**
 
@@ -216,22 +280,32 @@ compute_desc <- function(data, group_var) {
     mutate(across(-Statistic, ~ round(as.numeric(.), 3)))
 }
 
-desc_by_fertilizer <- compute_desc(df, "Fertilizer")
 desc_by_fertilizer %>%
   kable(
     caption = "Descriptive Statistics of Yield by Fertilizer",
     align = "c"
   ) %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE
+  ) %>%
+  row_spec(0, bold = TRUE) %>%  # Header
+  row_spec(seq(1, nrow(desc_by_fertilizer), 2), background = "#DFF2DF") %>% 
+  row_spec(seq(2, nrow(desc_by_fertilizer), 2), background = "#FFFFFF")    
 
-desc_by_crop <- compute_desc(df, "Crop")
+
 desc_by_crop %>%
   kable(
     caption = "Descriptive Statistics of Yield by Crop",
     align = "c"
   ) %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
-
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE
+  ) %>%
+  row_spec(0, bold = TRUE) %>%  
+  row_spec(seq(1, nrow(desc_by_crop), 2), background = "#DFF2DF") %>%  
+  row_spec(seq(2, nrow(desc_by_crop), 2), background = "#FFFFFF")
 ```
 
 **Assumption #6: The variances for each combination of the groups of fertilizer type and crop type are homogeneous, as assessed by Levene’s test of equality of variances, p = 0.755.**
@@ -259,7 +333,6 @@ levene_test_result %>%
 
 ## Computation
 ```{r anova_table, results='asis'}
-
 library(car)
 library(effectsize)
 library(kableExtra)
@@ -304,12 +377,26 @@ kable(
   format = "latex",
   booktabs = TRUE
 ) %>%
-  kable_styling(latex_options = c("hold_position"), full_width = FALSE)
-
+  kable_styling(
+    latex_options = c("hold_position"),
+    full_width = FALSE
+  ) %>%
+  row_spec(
+    row = seq(1, nrow(anova_table), 2),  
+    background = "green!20"
+  ) %>%
+  row_spec(
+    row = seq(2, nrow(anova_table), 2),
+    background = "green!10"
+  )
 ```
 
 #### Remark:
-The results of the two-way ANOVA indicate that fertilizer blend, crop type, and their interaction all make statistically significant contributions to the variability in crop yield. The significant interaction effect implies that the influence of fertilizer blend on yield is not consistent across crop types. Therefore, interpreting the main effects in isolation would be insufficient; examination of simple main effects is warranted to understand how fertilizer performance differs depending on the crop.
+A two-way analysis of variance (ANOVA) was conducted to evaluate the effects of Fertilizer Blend and Crop Type on crop yield. The analysis revealed that the model is statistically valid, identifying three distinct sources of variance. First, there was a significant main effect for Fertilizer Blend, indicating that, on average, yield varies depending on the blend applied. Second, a significant main effect was observed for Crop Type, suggesting that baseline yields differ significantly between the crops (Wheat, Corn, Soy, Rice).
+
+Most importantly, however, the analysis yielded a statistically significant Interaction Effect (Fertilizer Blend × Crop Type). The presence of this interaction provides critical insight into the data: it demonstrates that the efficacy of a specific Fertilizer Blend is conditional upon the Crop Type to which it is applied. In other words, the "best" fertilizer is not universally superior; a blend that maximizes yield for Corn may perform poorly for Wheat or Soy.
+
+Consequently, relying solely on the generalized main effects would be potentially misleading, as doing so would average out these nuances and mask the specific dynamics between the variables. Because the effect of the fertilizer depends on the crop, the main effects cannot be interpreted in isolation. To fully understand the nature of this relationship, a follow-up analysis of Simple Main Effects is warranted. This procedure will allow for a focused examination of differences between fertilizer blends within each specific crop category, providing a precise roadmap of where the significant differences lie.
 
 ## Results of Simple Main Effects
 
@@ -339,66 +426,21 @@ simple_effects_fert <- df_long %>%
 simple_effects_fert %>%
   kable(
     caption = "Simple Main Effects of Fertilizer within Each Crop",
-    digits = 3
+    digits = 3,
+    align = "c"
   ) %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
-
-sme_means <- df %>%
-group_by(Fertilizer, Crop) %>%
-summarise(
-Mean_Yield = mean(Yield),
-SD = sd(Yield),
-N = n(),
-SE = SD/sqrt(N),
-.groups = "drop"
-)
-
-ggplot(sme_means, aes(x = Fertilizer, y = Mean_Yield, group = Crop, color = Crop)) +
-geom_line(size = 1) +
-geom_point(size = 3) +
-geom_errorbar(aes(ymin = Mean_Yield - SE, ymax = Mean_Yield + SE), width = 0.1) +
-theme_minimal(base_size = 14) +
-labs(
-title = "Simple Main Effects of Fertilizer within each Crop",
-x = "Fertilizer",
-y = "Mean Yield"
-) +
-scale_color_brewer(palette = "Set2") +
-theme(legend.position = "right")
-
-```
-
-#### Remark:
-The analysis of simple main effects indicates that the impact of fertilizer blends varies considerably across different crop types. For some crops, differences among fertilizer treatments are substantial and statistically significant, reflecting a high sensitivity to the nutrient composition of the fertilizers. In contrast, other crops exhibit relatively minor differences, suggesting a more consistent response regardless of the fertilizer applied.
-
-These observations reinforce the presence of a significant interaction effect in the two-way ANOVA, highlighting that the effectiveness of a fertilizer cannot be generalized across all crops. No single fertilizer blend consistently maximizes yield for every crop; instead, each crop responds uniquely depending on its physiological characteristics and nutrient requirements.
-
-From an applied perspective, these findings emphasize the importance of crop-specific fertilizer management. Farmers and agronomists should avoid a “one-size-fits-all” approach and instead select fertilizer formulations tailored to the particular crop being cultivated. By aligning fertilizer selection with crop-specific responses, agricultural productivity can be optimized, and nutrient resources can be utilized more efficiently.
-
-#### 
-
-```{r}
-simple_effects_crop <- df_long %>%
-  group_by(Fertilizer) %>%
-  anova_test(Yield ~ Crop) %>%
-  get_anova_table() %>%
-  as_tibble() %>%
-  select(Fertilizer, Effect, DFn, DFd, F, p) %>%
-  rename(`Level of Fertilizer` = Fertilizer,
-         `Source` = Effect,
-         df = DFn) %>%
-  mutate(
-    `Mean Square` = F * MS_Error,
-    `Sum of Squares` = `Mean Square` * df
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE
   ) %>%
-  select(`Level of Fertilizer`, `Sum of Squares`, df, `Mean Square`, F, p)
-
-simple_effects_crop %>%
-  kable(
-    caption = "Simple Main Effects of Crop within Each Fertilizer",
-    digits = 3
+  row_spec(
+    row = seq(1, nrow(simple_effects_fert), 2),   # odd rows
+    background = "#d4f5d4"
   ) %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  row_spec(
+    row = seq(2, nrow(simple_effects_fert), 2),   # even rows
+    background = "#eafbe9"
+  )
 
 sme_means2 <- df %>%
 group_by(Crop, Fertilizer) %>%
