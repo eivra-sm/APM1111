@@ -1,563 +1,335 @@
----
-title: "Formative Assessment 9"
-author: "Sinocruz, A & Tagaytay, G"
-date: "2025-12-02"
-output:
-  pdf_document:
-    latex_engine: lualatex
----
-
-Github Link: https://github.com/eivra-sm/APM1111/blob/main/FA9.md
-
-## Introduction 
-
-A study was conducted to determine whether crop yield is influenced by (1) fertilizer blend (X, Y, Z) and (2) crop type (wheat, corn, soy, rice). A two-way ANOVA was used to test for:
-
--   A main effect of fertilizer blend,
-
--   A main effect of crop type,
-
--   An interaction between fertilizer blend × crop type
+# Formative Assessment 8
+## Author: "Sinocruz, A & Tagaytay, G"
+## Date: "2025-11-26"
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  warning = FALSE,
-  message = FALSE
-)
+knitr::opts_chunk$set(echo = TRUE)
+data("PlantGrowth")
+df <- PlantGrowth
+head(df)
+library(tidyverse)
+library(rstatix)
+library(knitr)
+library(dplyr)
+library(kableExtra)
+```
 
-library(car)
+**Github link:** *https://github.com/eivra-sm/APM1111/blob/main/FA8.md*
 
+## Assumptions
 
+### Assumption #1: You have one dependent variable that is measured at the continuous level.
+```{r}
+str(df$weight)
+summary(df$weight)
+```
+
+**Remark.** The dependent variable in this study is weight, which represents the dried weight of individual plants measured in grams. Since weight is measured using a continuous numeric scale with meaningful intervals (e.g., 4.5 g, 5.2 g, 6.0 g), it qualifies as a continuous, quantitative variable. This meets the first requirement of one-way ANOVA, which assumes that the dependent variable is measured at the interval or ratio level.
+
+### Assumption #2: You have one independent variable that consists of three or more categorical, independent groups.
+
+**Remarks:** The independent variable in this study is **group**, which is a categorical factor with **three distinct and non-overlapping levels:** _ctrl_, _trt1_, and _trt2_. Each level represents a separate treatment condition applied to different sets of plants. Because the levels are mutually exclusive and clearly defined, this assumption is fully satisfied. The structure of the grouping variable is appropriate for conducting a one-way ANOVA, which requires at least three independent groups for comparison.  
+
+### Assumption #3: You should have independence of observations.
+
+**Remarks:** The observations in this dataset meet the requirement of independence. Each plant was grown, measured, and assigned to a treatment condition separately, with **each individual plant** contributing only one weight measurement. There is no repeated measurement, pairing, or clustering within the dataset. Since no plant appears in more than one group and there is no interaction among measurement units that would affect their outcomes, the independence assumption crucial for the validity of ANOVA is considered to be met.  
+
+### Assumption #4: There should be no significant outliers in the three groups of your independent variable in terms of the dependent variable.  
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(ggdist)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(df, aes(x = group, y = weight, fill = group)) +
+  ggdist::stat_halfeye(
+    adjust = .7, width = .6, .width = 0,
+    justification = -0.3, point_colour = NA
+  ) +
+  geom_boxplot(width = .25, outlier.shape = NA, alpha = 0.5) +
+  geom_jitter(width = .05, alpha = 0.8) +
+  scale_fill_manual(values = c(
+    "ctrl" = "#A6CEE3",
+    "trt1" = "#B2DF8A",
+    "trt2" = "#FDBF6F"
+  )) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Raincloud Plot of Plant Weights by Group",
+    x = "Group",
+    y = "Plant Weight (g)"
+  )
+```  
+
+**Remarks:** The raincloud plot—which combines density plots, boxplots, and jittered raw data—was inspected to assess the presence of outliers in each group. The boxplots show that **no data points fall beyond the whiskers**, and the jittered points appear consistent with the distribution of the rest of the group. This visual assessment indicates that there are **no extreme or influential outliers** that could distort the group means or affect the ANOVA results. Therefore, the assumption of no significant outliers is satisfied.
+
+\newpage
+
+#### Assumption #5: The dependent variable should be approximately normally distributed for each group of the independent variable.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(psych)
 library(tidyverse)
 library(rstatix)
 library(kableExtra)
-library(psych)
 
-crop_yield <- tribble(
-  ~Fertilizer, ~Wheat, ~Corn, ~Soy, ~Rice,
-  "Blend X", 123, 128, 166, 151,
-  "Blend X", 156, 150, 178, 125,
-  "Blend X", 112, 174, 187, 117,
-  "Blend X", 100, 116, 153, 155,
-  "Blend X", 168, 109, 195, 158,
-  "Blend Y", 135, 175, 140, 167,
-  "Blend Y", 130, 132, 145, 183,
-  "Blend Y", 176, 120, 159, 142,
-  "Blend Y", 120, 187, 131, 167,
-  "Blend Y", 155, 184, 126, 168,
-  "Blend Z", 156, 186, 185, 175,
-  "Blend Z", 180, 138, 206, 173,
-  "Blend Z", 147, 178, 188, 154,
-  "Blend Z", 146, 176, 165, 191,
-  "Blend Z", 193, 190, 188, 169
-)
+# Descriptives
+desc <- df %>%
+  group_by(group) %>%
+  summarise(
+    Valid = as.integer(n()),
+    Missing = as.integer(sum(is.na(weight))),
+    Mean = mean(weight),
+    SD = sd(weight),
+    .groups = "drop"
+  )
 
-df <- crop_yield %>% 
-  pivot_longer(cols = Wheat: Rice, names_to = "Crop", values_to = "Yield")
+# Skewness / kurtosis
+shape_stats <- df %>%
+  group_by(group) %>%
+  summarise(
+    Skewness = psych::skew(weight)[1],
+    SE_Skew = sqrt(6 / n()),
+    Kurtosis = psych::kurtosi(weight)[1],
+    SE_Kurt = sqrt(24 / n()),
+    .groups = "drop"
+  )
 
-df$Fertilizer <- as.factor(df$Fertilizer)
-df$Crop <- as.factor(df$Crop)
+# Shapiro-Wilk
+shap <- df %>%
+  group_by(group) %>%
+  shapiro_test(weight) %>%
+  rename(
+    Shapiro_Wilk = statistic,
+    Shapiro_p = p
+  ) %>%
+  select(group, Shapiro_Wilk, Shapiro_p)
 
+# Combine all
+final <- desc %>%
+  left_join(shape_stats, by = "group") %>%
+  left_join(shap, by = "group")
 
-```
+# Transpose
+final_t <- final %>%
+  pivot_longer(-group, names_to = "Statistic", values_to = "Value") %>%
+  pivot_wider(names_from = group, values_from = Value)
 
-## **Assumptions**
+# Format numbers
+final_t <- final_t %>%
+  mutate(across(-Statistic, ~ if_else(Statistic %in% c("Valid", "Missing"), 
+                                      as.character(as.integer(.)), 
+                                      sprintf("%.3f", .))))
 
-Initiating a two-way ANOVA requires more than simply applying a formula to a dataset; it necessitates a rigorous preliminary evaluation to confirm the data’s suitability for this specific statistical model. This validation process is critical because the two-way ANOVA is a parametric test reliant on specific mathematical properties. Consequently, researchers must verify that their data adheres to six fundamental assumptions. Failure to meet these prerequisites can compromise the statistical power of the analysis, potentially leading to biased estimates or erroneous conclusions. Therefore, before interpreting any main effects or interactions, one must systematically demonstrate that the data "passes" these mandatory checks to ensure the resulting output is robust and scientifically valid.
-
-Below are the assumptions:
-
-**Assumption #1:** Your **dependent variable** must be **continuous** (measured on an interval or ratio scale, such as time, weight, or test scores).
-
-**Assumption #2:** Your design must include exactly **two independent variables** that are **categorical**, with each variable containing **two or more independent groups** (levels).
-
-**Assumption #3:** You must ensure **independence of observations**, meaning that no participant is in more than one group and one participant's data does not influence another's.
-
-**Assumption #4:** The dataset must contain **no significant outliers**, as these extreme values can distort the mean and variance of your results.
-
-**Assumption #5:** Your **dependent variable** must follow an **approximate normal distribution** (bell curve) for **each specific combination of the groups** formed by the two independent variables.
-
-**Assumption #6:** There must be **homogeneity of variances** (homoscedasticity), meaning the spread or variability of the data is roughly equal across **every combination of the groups**.
-
-## Null hypothesis:
-
-There is no significant interaction effect on yield between fertilizer and crop.
-
-## Problem:
-
-A new fertilizer has been developed to increase the yield on crops, and the makers of the fertilizer want to better understand which of the three formulations (blends) of this fertilizer are most effective for wheat, corn, soybeans and rice (crops). They test each of the three blends on 5 samples of each of the four types of crops. The crop yields for the 12 combinations are as shown in the table below.
-
-```{r}
-df %>%
+#table with header
+final_t %>%
   kable(
-    caption = "Crop Yield Data (Long Format)",
-    digits = 0
+    caption = "Table 1: Descriptive Statistics and Normality Tests by Group (Transposed)",
+    align = "c",
+    col.names = c("Statistic", names(final_t)[-1])  # rename first column
   ) %>%
   kable_styling(
     bootstrap_options = c("striped", "hover", "condensed"),
-    full_width = FALSE
+    full_width = FALSE,
+    position = "center"
   ) %>%
-  row_spec(0, bold = TRUE) %>%
-  row_spec(
-    seq(1, nrow(df), 2), background = "#DFF2DF"
-  ) %>%
-  row_spec(
-    seq(2, nrow(df), 2), background = "#FFFFFF"
+  row_spec(0, bold = TRUE, background = "#4B79A1", color = "white") %>%  
+  row_spec(seq(1, nrow(final_t), 2), background = "#f2f2f2") %>%        
+  row_spec(seq(2, nrow(final_t), 2), background = "white") %>%          
+  add_header_above(c(" " = 1, "Weight (g)" = ncol(final_t) - 1)) %>%
+  add_header_above(c("Normality Assessment of Plant Weights" = ncol(final_t)))
+```
+
+**Remark.** The Shapiro–Wilk tests conducted separately for the ctrl, trt1, and trt2 groups all produced p-values above the conventional α = .05 threshold. This indicates that none of the three groups significantly deviate from a normal distribution. Furthermore, skewness and kurtosis values remain close to zero, suggesting that the shape of each distribution is reasonably symmetric and mesokurtic. Taken together, both statistical indicators and descriptive distribution characteristics support the conclusion that the assumption of normality has been satisfied. Therefore, it is appropriate to proceed with the one-way ANOVA.
+
+#### Assumption #6: Homogeneity of variances (i.e., the variance of the dependent variable is equal in each group of your independent variable).
+```{r}
+library(car)
+
+# Run Levene's Test
+lev <- leveneTest(weight ~ group, data = df) %>%
+  as.data.frame() %>%
+  select(-Df) %>% 
+  rename(
+    statistic = `F value`,
+    p = `Pr(>F)`
   )
 ```
 
-## Checking of Assumptions
-
-**Assumption #1: The dependent variable, crop yield, is measured at the continuous level.**
-
-**Remark.** The first assumption of a two-way ANOVA requires that the dependent variable be measured on a continuous (interval or ratio) scale.
-In this study, the dependent variable is crop yield, recorded as the number of units produced by each crop under each fertilizer blend. Because yield is measured numerically and represents a meaningful quantity where differences between values are interpretable (e.g., a difference of 10 units represents the same increase anywhere on the scale), the variable meets the criteria for a ratio-level, continuous measure. This satisfies the requirement that the ANOVA operates on a continuous outcome variable.
-
-**Assumption #2: The two independent variables, fertilizer type (Blend X, Blend Y, Blend Z) and crop type (Wheat, Corn, Soy, Rice), each consist of two or more categorical, independent groups.**
-
-**Remark.** A two-way ANOVA requires two independent variables (factors), each containing distinct, non-overlapping categories.
-
-\begin{itemize}
-    \item The first factor is \textbf{Fertilizer Type}, which has three categorical groups:
-    \begin{itemize}
-        \item Blend X
-        \item Blend Y
-        \item Blend Z
-    \end{itemize}
-    
-    \item The second factor is \textbf{Crop Type}, which consists of four categorical groups:
-    \begin{itemize}
-        \item Wheat
-        \item Corn
-        \item Soy
-        \item Rice
-    \end{itemize}
-\end{itemize}
-
-Both variables meet the criteria for categorical grouping factors, and each observation belongs to one and only one level of each factor. There is no overlap between categories, and the groups are mutually exclusive. Therefore, this assumption is \textbf{fully met}.
-
-**Assumption #3: The independence of observation is observed.**
-
-**Remark.** In this study, each yield value represents a distinct crop sample treated with a specific fertilizer blend. The experimental design states that five independent samples were used for every combination of fertilizer and crop type. No sample appears in more than one condition, and fertilizer treatments were applied separately. Thus, the independence of observations is maintained by design.
-
-**Assumption #4: There are no significant outliers in each of the 12 cells of the design.**
-
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
-
-library(ggplot2)
-library(ggdist)
-
-# Your data
-df <- tribble(
-  ~Fertilizer, ~Wheat, ~Corn, ~Soy, ~Rice,
-  "Blend X", 123, 128, 166, 151,
-  "Blend X", 156, 150, 178, 125,
-  "Blend X", 112, 174, 187, 117,
-  "Blend X", 100, 116, 153, 155,
-  "Blend X", 168, 109, 195, 158,
-  "Blend Y", 135, 175, 140, 167,
-  "Blend Y", 130, 132, 145, 183,
-  "Blend Y", 176, 120, 159, 142,
-  "Blend Y", 120, 187, 131, 167,
-  "Blend Y", 155, 184, 126, 168,
-  "Blend Z", 156, 186, 185, 175,
-  "Blend Z", 180, 138, 206, 173,
-  "Blend Z", 147, 178, 188, 154,
-  "Blend Z", 146, 176, 165, 191,
-  "Blend Z", 193, 190, 188, 169
-)
-
-df_long <- df %>%
-  pivot_longer(cols = Wheat: Rice, names_to = "Crop", values_to = "Yield")
-
-df_long$Fertilizer <- as.factor(df_long$Fertilizer)
-df_long$Crop <- as.factor(df_long$Crop)
-
-ggplot(df_long, aes(x = Fertilizer, y = Yield, fill = Crop, color = Crop)) +
-  ggdist::stat_halfeye(
-    adjust = 0.7, width = 0.6, .width = 0,
-    justification = 0.3,
-    point_colour = NA,
-    position = position_dodge(width = 0.8)
-  ) +
-  geom_boxplot(
-    width = 0.25, outlier.shape = NA, alpha = 0.5,
-    position = position_dodge(width = 0.8)
-  ) +
-  geom_jitter(
-    alpha = 0.8,
-    position = position_dodge(width = 0.8)
-  ) +
-  theme_minimal(base_size = 14) +
-  labs(
-    title = "Raincloud Plot of Crop Yield by Fertilizer",
-    x = "Fertilizer",
-    y = "Yield"
-  ) +
-  scale_fill_manual(
-    values = c(
-      "Wheat" = "#1f77b4",  
-      "Corn"  = "#ffdd00",  
-      "Soy"   = "#2ca02c",  
-      "Rice"  = "#ff69b4"   
-    )
-  ) +
-  scale_color_manual(
-    values = c(
-      "Wheat" = "#1f77b4",
-      "Corn"  = "#ffdd00",
-      "Soy"   = "#2ca02c",
-      "Rice"  = "#ff69b4"
-    )
-  ) +
-  theme(legend.position = "right")
-
-```
-
-**Remakr.** \noindent \textbf{Assumption Check: No Significant Outliers}
-
-A two-way ANOVA assumes that there are no extreme outliers in any of the factorial combinations (i.e., in each of the 12 cells created by 3 fertilizer levels $\times$ 4 crop types).
-
-Outliers were inspected using:
-\begin{itemize}
-    \item Raincloud plots (combining jittered points, boxplots, and density half-eyes),
-    \item Boxplot whisker rules, and
-    \item Visual examination of the distribution of values within each group.
-\end{itemize}
-
-These diagnostic visualizations revealed no severe deviations from expected values and no yield measurements that fell far outside the typical range for their group. Specifically, all observations fell within reasonable boundaries relative to their corresponding interquartile range and whisker limits. Therefore, the assumption of ``no significant outliers'' is \textbf{supported}.
-
-**Assumption #5: The dependent variable, crop yield, is approximately normally distributed for each combination of the groups of fertilizer type and crop type, as assessed by Shapiro–Wilk test of normality (p \> .05).**
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-library(tidyverse)
-library(psych)
-library(rstatix)
-library(kableExtra)
-
-# Your dataset
-crop_yield <- tribble(
-  ~Fertilizer, ~Wheat, ~Corn, ~Soy, ~Rice,
-  "Blend X", 123, 128, 166, 151,
-  "Blend X", 156, 150, 178, 125,
-  "Blend X", 112, 174, 187, 117,
-  "Blend X", 100, 116, 153, 155,
-  "Blend X", 168, 109, 195, 158,
-  "Blend Y", 135, 175, 140, 167,
-  "Blend Y", 130, 132, 145, 183,
-  "Blend Y", 176, 120, 159, 142,
-  "Blend Y", 120, 187, 131, 167,
-  "Blend Y", 155, 184, 126, 168,
-  "Blend Z", 156, 186, 185, 175,
-  "Blend Z", 180, 138, 206, 173,
-  "Blend Z", 147, 178, 188, 154,
-  "Blend Z", 146, 176, 165, 191,
-  "Blend Z", 193, 190, 188, 169
-)
-
-df <- crop_yield %>% 
-  pivot_longer(cols = Wheat: Rice, names_to = "Crop", values_to = "Yield") %>%
-  mutate(Fertilizer = as.factor(Fertilizer),
-         Crop = as.factor(Crop))
-
-# Function that computes descriptive statistics
-compute_desc <- function(data, group_var) {
-  data %>%
-    group_by(.data[[group_var]]) %>%
-    summarise(
-      Valid = n(),
-      Mean = mean(Yield),
-      SD = sd(Yield),
-      Skewness = psych::skew(Yield)[1],
-      SE_Skew = sqrt(6/n()),
-      Kurtosis = psych::kurtosi(Yield)[1],
-      SE_Kurt = sqrt(24/n()),
-      Shapiro_Wilk = shapiro_test(Yield)$statistic,
-      P_value = shapiro_test(Yield)$p,
-      .groups = "drop"
-    ) %>%
-    pivot_longer(-1, names_to = "Statistic", values_to = "Value") %>%
-    pivot_wider(names_from = !!sym(group_var), values_from = Value) %>%
-    mutate(across(-Statistic, ~ round(as.numeric(.), 3)))
-}
-
-# Create the two required objects
-desc_by_fertilizer <- compute_desc(df, "Fertilizer")
-desc_by_crop       <- compute_desc(df, "Crop")
-
-desc_by_fertilizer %>%
-  kable(
-    caption = "Descriptive Statistics of Yield by Fertilizer",
-    align = "c"
-  ) %>%
-  kable_styling(
-    bootstrap_options = c("striped", "hover", "condensed"),
-    full_width = FALSE
-  ) %>%
-  row_spec(0, bold = TRUE) %>%  # Header
-  row_spec(seq(1, nrow(desc_by_fertilizer), 2), background = "#DFF2DF") %>% 
-  row_spec(seq(2, nrow(desc_by_fertilizer), 2), background = "#FFFFFF")    
-
-
-desc_by_crop %>%
-  kable(
-    caption = "Descriptive Statistics of Yield by Crop",
-    align = "c"
-  ) %>%
-  kable_styling(
-    bootstrap_options = c("striped", "hover", "condensed"),
-    full_width = FALSE
-  ) %>%
-  row_spec(0, bold = TRUE) %>%  
-  row_spec(seq(1, nrow(desc_by_crop), 2), background = "#DFF2DF") %>%  
-  row_spec(seq(2, nrow(desc_by_crop), 2), background = "#FFFFFF")
-```
-
-**Assumption #6: The variances for each combination of the groups of fertilizer type and crop type are homogeneous, as assessed by Levene’s test of equality of variances, p = 0.755.**
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-
-levene_test_result <- df %>%
-  levene_test(Yield ~ Fertilizer * Crop)
-
-levene_test_result %>%
+lev %>%
   rename(
-    F = statistic,
-    df1 = df1,
-    df2 = df2,
-    p = p
+    `Statistic (F)` = statistic,
+    `p-value` = p
   ) %>%
   kable(
     caption = "Test for Equality of Variances (Levene's Test)",
-    digits = 3,
-    align = "c"
-  ) %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
-
-```
-
-## Computation
-```{r anova_table, results='asis'}
-library(car)
-library(effectsize)
-library(kableExtra)
-library(tidyverse)
-
-# Type III ANOVA
-anova_res <- Anova(lm(Yield ~ Fertilizer * Crop, data = df), type = 3)
-
-# Convert ANOVA table to data frame
-anova_df <- as.data.frame(anova_res) %>%
-  rownames_to_column(var = "Cases")
-
-# Rename columns
-anova_table <- anova_df %>%
-  rename(
-    `Sum of Squares` = `Sum Sq`,
-    df = `Df`,
-    F = `F value`,
-    p = `Pr(>F)`
-  ) %>%
-  mutate(
-    `Mean Square` = `Sum of Squares` / df
-  )
-
-# Partial Eta Squared
-SS_error <- anova_table$`Sum of Squares`[anova_table$Cases == "Residuals"]
-anova_table$`Partial Eta Squared` <- anova_table$`Sum of Squares` /
-  (anova_table$`Sum of Squares` + SS_error)
-
-# Clean Cases names
-anova_table$Cases <- gsub("\\(|\\)", "", anova_table$Cases)
-
-# Arrange columns
-anova_table <- anova_table %>%
-  select(Cases, `Sum of Squares`, df, `Mean Square`, F, p, `Partial Eta Squared`)
-
-# Print LaTeX table
-kable(
-  anova_table,
-  caption = "Two-way ANOVA Table (JASP-style, Type III SS)",
-  digits = 3,
-  format = "latex",
-  booktabs = TRUE
-) %>%
-  kable_styling(
-    latex_options = c("hold_position"),
-    full_width = FALSE
-  ) %>%
-  row_spec(
-    row = seq(1, nrow(anova_table), 2),  
-    background = "green!20"
-  ) %>%
-  row_spec(
-    row = seq(2, nrow(anova_table), 2),
-    background = "green!10"
-  )
-```
-
-#### Remark:
-A two-way analysis of variance (ANOVA) was conducted to evaluate the effects of Fertilizer Blend and Crop Type on crop yield. The analysis revealed that the model is statistically valid, identifying three distinct sources of variance. First, there was a significant main effect for Fertilizer Blend, indicating that, on average, yield varies depending on the blend applied. Second, a significant main effect was observed for Crop Type, suggesting that baseline yields differ significantly between the crops (Wheat, Corn, Soy, Rice).
-
-Most importantly, however, the analysis yielded a statistically significant Interaction Effect (Fertilizer Blend × Crop Type). The presence of this interaction provides critical insight into the data: it demonstrates that the efficacy of a specific Fertilizer Blend is conditional upon the Crop Type to which it is applied. In other words, the "best" fertilizer is not universally superior; a blend that maximizes yield for Corn may perform poorly for Wheat or Soy.
-
-Consequently, relying solely on the generalized main effects would be potentially misleading, as doing so would average out these nuances and mask the specific dynamics between the variables. Because the effect of the fertilizer depends on the crop, the main effects cannot be interpreted in isolation. To fully understand the nature of this relationship, a follow-up analysis of Simple Main Effects is warranted. This procedure will allow for a focused examination of differences between fertilizer blends within each specific crop category, providing a precise roadmap of where the significant differences lie.
-
-## Results of Simple Main Effects
-
-```{r}
-library(rstatix)
-library(dplyr)
-library(kableExtra)
-
-overall_aov <- aov(Yield ~ Fertilizer * Crop, data = df_long)
-MS_Error <- summary(overall_aov)[[1]][3, "Mean Sq"]
-
-simple_effects_fert <- df_long %>%
-  group_by(Crop) %>%
-  anova_test(Yield ~ Fertilizer) %>%
-  get_anova_table() %>%
-  as_tibble() %>%
-  select(Crop, Effect, DFn, DFd, F, p) %>%
-  rename(`Level of Crop` = Crop,
-         `Source` = Effect,
-         df = DFn) %>%
-  mutate(
-    `Mean Square` = F * MS_Error,
-    `Sum of Squares` = `Mean Square` * df
-  ) %>%
-  select(`Level of Crop`, `Sum of Squares`, df, `Mean Square`, F, p)
-
-simple_effects_fert %>%
-  kable(
-    caption = "Simple Main Effects of Fertilizer within Each Crop",
-    digits = 3,
-    align = "c"
+    digits = 4,
+    align = "c",
+    booktabs = TRUE
   ) %>%
   kable_styling(
     bootstrap_options = c("striped", "hover", "condensed"),
     full_width = FALSE
   ) %>%
-  row_spec(
-    row = seq(1, nrow(simple_effects_fert), 2),   # odd rows
-    background = "#d4f5d4"
-  ) %>%
-  row_spec(
-    row = seq(2, nrow(simple_effects_fert), 2),   # even rows
-    background = "#eafbe9"
+  row_spec(0, background = "#D9EAF7", bold = TRUE) %>%    
+  row_spec(1:nrow(lev), background = "#F2F7FB")            
+```
+
+**Remark.** The results of Levene’s test indicate that the variability of scores across the groups is statistically similar, as the obtained p-value was greater than .05. Because the test was not significant, we fail to reject the null hypothesis that the group variances are equal. This means the assumption of homogeneity of variances has been met, suggesting that differences in group means are not influenced by unequal spread or dispersion of the data. Therefore, it is appropriate to proceed with the standard One-Way ANOVA, as its validity and interpretability are maintained under this assumption.
+
+#### Computation
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(rstatix)
+library(kableExtra)
+
+anova_res <- aov(weight ~ group, data = df)
+
+anova_table <- anova(anova_res) %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "Source") %>%
+  rename(
+    `Degrees of Freedom (df)` = "Df",
+    `Sum of Squares (SS)` = "Sum Sq",
+    `Mean Square (MS)` = "Mean Sq",
+    `F Statistic` = "F value",
+    `p-value` = "Pr(>F)"
   )
 
-sme_means2 <- df %>%
-group_by(Crop, Fertilizer) %>%
-summarise(
-Mean_Yield = mean(Yield),
-SD = sd(Yield),
-N = n(),
-SE = SD/sqrt(N),
-.groups = "drop"
-)
+anova_table <- anova_table %>%
+  mutate(
+    `Partial Eta²` = case_when(
+      Source != "Residuals" ~ `Sum of Squares (SS)` / sum(`Sum of Squares (SS)`),
+      TRUE ~ NA_real_
+    ),
+    `Sum of Squares (SS)` = round(`Sum of Squares (SS)`, 3),
+    `Mean Square (MS)` = round(`Mean Square (MS)`, 3),
+    `F Statistic` = round(`F Statistic`, 3),
+    `p-value` = ifelse(!is.na(`p-value`), signif(`p-value`, 3), NA),
+    `Partial Eta²` = ifelse(!is.na(`Partial Eta²`), round(`Partial Eta²`, 3), NA)
+  )
 
-ggplot(sme_means2, aes(x = Crop, y = Mean_Yield, group = Fertilizer, color = Fertilizer)) +
-geom_line(size = 1) +
-geom_point(size = 3) +
-geom_errorbar(aes(ymin = Mean_Yield - SE, ymax = Mean_Yield + SE), width = 0.1) +
-theme_minimal(base_size = 14) +
-labs(
-title = "Simple Main Effects of Crop within each Fertilizer",
-x = "Crop",
-y = "Mean Yield"
-) +
-scale_color_brewer(palette = "Set2") +
-theme(legend.position = "right")
+anova_table <- anova_table %>%
+  rename(
+    `Partial Eta2` = `Partial Eta²`
+  )
 
+colnames(anova_table) <- iconv(colnames(anova_table), to = "ASCII//TRANSLIT")
+
+anova_table %>%
+  kable(
+    caption = "One-Way ANOVA Summary for Plant Weight Across Treatment Groups",
+    align = "c",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    font_size = 8,
+    latex_options = "scale_down"
+  ) %>%
+  row_spec(0, background = "#B5D5F5", bold = TRUE) %>%  
+  row_spec(1:nrow(anova_table), background = "#E9F2FB")
 ```
 
-#### Remark:
-The analysis of simple main effects for crop type within each fertilizer blend demonstrates that crop yield varies substantially depending on the specific fertilizer applied. Certain fertilizer formulations appear to favor particular crops more strongly, resulting in higher yields for those crops, while other crops show more modest responses under the same fertilizer. This pattern indicates that the effectiveness of a fertilizer is not uniform across all crop types, but rather crop-specific, reflecting the unique nutrient requirements and growth characteristics of each crop.
-
-These results further reinforce the conclusion that there is a meaningful interaction between fertilizer formulation and crop species. The significant interaction implies that the optimal fertilizer choice depends on the crop in question, and that blanket recommendations for all crops may not maximize productivity. From a practical standpoint, these findings suggest the necessity of tailored fertilizer strategies that account for both crop type and fertilizer composition, thereby enabling more efficient nutrient management and improved overall yield.
-
-## Partial Eta Squared
-
-```{r}
-eta_sq_res <- eta_squared(
-  lm(Yield ~ Fertilizer * Crop, data = df),
-  partial = TRUE
-)
-
-eta_sq_res %>%
-  rename(Effect = Parameter,
-         Partial_Eta_Sq = Eta2_partial) %>%
-  kable(caption = "Partial Eta Squared for Two-way ANOVA",
-        digits = 3) %>%
-  kable_styling(bootstrap_options = c("striped","hover","condensed"),
-                full_width = FALSE)
-
-```
-
-## Post Hoc Comparisons
-
-```{r posthoc, results='asis'}
-library(emmeans)
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
 library(kableExtra)
-library(dplyr)
 
-# Fit two-way ANOVA model
-model <- lm(Yield ~ Fertilizer * Crop, data = df_long)
+desc_weight <- df %>%
+  group_by(group) %>%
+  summarise(
+    `Sample Size (n)` = n(),
+    `Mean Weight` = round(mean(weight), 3),
+    `Standard Deviation` = round(sd(weight), 3),
+    .groups = "drop"
+  )
 
-# --- Estimated Marginal Means ---
-emm_fert <- emmeans(model, ~ Fertilizer)
-emm_crop <- emmeans(model, ~ Crop)
-emm_interaction <- emmeans(model, ~ Fertilizer * Crop)
-
-# --- Pairwise Comparisons ---
-
-# 1. Fertilizer main effect
-pairwise_fert <- contrast(emm_fert, method = "pairwise", adjust = "tukey") %>% summary(infer = TRUE)
-pairwise_fert_df <- as.data.frame(pairwise_fert)
-
-# Print Fertilizer post hoc table
-pairwise_fert_df %>%
+desc_weight %>%
   kable(
-    caption = "Post Hoc Pairwise Comparisons of Fertilizer (Tukey)",
-    digits = 3,
-    format = "latex",
-    booktabs = TRUE
+    caption = "Descriptive Statistics for Plant Weight Across Treatment Groups",
+    align = c("l", "c", "c", "c"),
+    booktabs = TRUE,
+    col.names = c("Group", "n", "Mean", "SD")
   ) %>%
-  kable_styling(latex_options = c("hold_position"), full_width = FALSE)
-
-
-# 2. Crop main effect
-pairwise_crop <- contrast(emm_crop, method = "pairwise", adjust = "tukey") %>% summary(infer = TRUE)
-pairwise_crop_df <- as.data.frame(pairwise_crop)
-
-# Print Crop post hoc table
-pairwise_crop_df %>%
-  kable(
-    caption = "Post Hoc Pairwise Comparisons of Crop (Tukey)",
-    digits = 3,
-    format = "latex",
-    booktabs = TRUE
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    position = "center"
   ) %>%
-  kable_styling(latex_options = c("hold_position"), full_width = FALSE)
-
-
-# 3. Interaction: Fertilizer pairwise within each Crop
-pairwise_interaction <- contrast(emm_interaction, method = "pairwise", by = "Crop", adjust = "tukey") %>% summary(infer = TRUE)
-pairwise_interaction_df <- as.data.frame(pairwise_interaction)
-
-# Print Interaction post hoc table
-pairwise_interaction_df %>%
-  kable(
-    caption = "Post Hoc Pairwise Comparisons of Fertilizer within Each Crop (Tukey)",
-    digits = 3,
-    format = "latex",
-    booktabs = TRUE
-  ) %>%
-  kable_styling(latex_options = c("hold_position"), full_width = FALSE)
+  row_spec(0, background = "#B5D5F5", bold = TRUE) %>% 
+  row_spec(1:nrow(desc_weight), background = "#E9F2FB")  
 ```
 
 \newpage
 
-## Results:
-Post hoc Tukey comparisons offer a more detailed understanding of the specific differences between fertilizer blends and crop types. These pairwise tests identify precisely which groups contribute to the significant main effects observed in the ANOVA. When considered alongside the significant interaction effects, the post hoc results reveal a complex pattern of variation across fertilizer–crop combinations. This underscores the importance of evaluating both factors simultaneously, rather than in isolation, when formulating fertilizer recommendations. By accounting for the unique responses of each crop to different fertilizers, these findings provide practical guidance for optimizing crop yields and improving nutrient management strategies.
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(rstatix)
+library(kableExtra)
+
+df <- df %>% mutate(group = as.factor(group))
+anova_res <- aov(weight ~ group, data = df)
+tukey <- tukey_hsd(anova_res, "group")
+resid_ms <- summary(anova_res)[[1]]$`Mean Sq`[2]
+
+posthoc_table <- tukey %>%
+  rowwise() %>%
+  mutate(
+    SE = sqrt(resid_ms * (1/(df %>% filter(group == group1) %>% nrow()) +
+                          1/(df %>% filter(group == group2) %>% nrow()))),
+    t = estimate / SE
+  ) %>%
+  ungroup() %>%
+  select(group1, group2, estimate, conf.low, conf.high, SE, t, p.adj) %>%
+  rename(
+    `Group 1` = group1,
+    `Group 2` = group2,
+    `Mean Difference` = estimate,
+    `Lower CI` = conf.low,
+    `Upper CI` = conf.high,
+    `p-value (Tukey)` = p.adj
+  ) %>%
+  mutate(
+    `Mean Difference` = round(`Mean Difference`, 3),
+    `Lower CI` = round(`Lower CI`, 3),
+    `Upper CI` = round(`Upper CI`, 3),
+    SE = round(SE, 3),
+    t = round(t, 3),
+    `p-value (Tukey)` = signif(`p-value (Tukey)`, 3),
+    Comparison = paste(`Group 1`, "vs", `Group 2`)
+  ) %>%
+  select(Comparison, `Mean Difference`, `Lower CI`, `Upper CI`, SE, t, `p-value (Tukey)`)
+
+posthoc_table <- posthoc_table %>% mutate(across(everything(), as.character))
+
+col_headers <- c("Comparison", "Mean Diff", "Lower CI", "Upper CI", "SE", "t", "p-value")
+
+posthoc_table %>%
+  kable(
+    caption = "Post-hoc Tukey HSD Pairwise Comparisons of Plant Weights",
+    col.names = col_headers,
+    align = c("l", "c", "c", "c", "c", "c", "c"),
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    position = "center"
+  ) %>%
+  add_header_above(c(" " = 1, "Confidence Interval (95%)" = 3, " " = 3)) %>%
+  row_spec(0, background = "#B5D5F5", bold = TRUE) %>%       
+  row_spec(1:nrow(posthoc_table), background = "#E9F2FB")    
+```
+## Analysis/Reporting
+
+A one-way analysis of variance (ANOVA) was conducted to determine whether dried plant weight differed across three treatment groups (*ctrl*, *trt1*, and *trt2*). The dependent variable was dried plant weight (grams), and the independent variable was treatment condition with three independent levels. Prior to analysis, assumptions were evaluated. Boxplots showed no extreme outliers, the Shapiro–Wilk tests indicated that plant weight was normally distributed within each group (all p > .05), and Levene’s test confirmed homogeneity of variances, p > .05.
+
+Descriptive statistics suggested potential group differences, with **ctrl** (*M = 5.032, SD = 0.583*), **trt1** (*M = 4.661, SD = 0.794*), and **trt2** (*M = 5.526, SD = 0.443*). The ANOVA revealed a statistically significant effect of treatment on plant weight, F(2, 27) = 4.846, p = .016, partial η² = .264, indicating that approximately 26.4% of the variance in plant weight was explained by treatment condition.
+
+Tukey HSD post hoc comparisons showed that trt2 plants weighed significantly more than trt1 plants (mean difference = 0.864 g, 95% CI [0.144, 1.584], p = .016). However, the differences between ctrl vs. trt1 (mean difference = 0.371 g, 95% CI [-0.348, 1.090], p = .436) and ctrl vs. trt2 (mean difference = –0.494 g, 95% CI [-1.214, 0.226], p = .218) were not statistically significant.
+
+Overall, these findings indicate that treatment condition influences plant growth, with the trt2 treatment resulting in significantly heavier plants than trt1, while the control group did not significantly differ from either treatment condition.
