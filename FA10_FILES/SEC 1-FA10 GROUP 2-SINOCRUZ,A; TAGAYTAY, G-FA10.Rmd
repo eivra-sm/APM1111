@@ -44,10 +44,13 @@ df_long$Margarine <- factor(df_long$Margarine)
 library(knitr)
 library(kableExtra)
 
-df %>%
-kable(caption = "Cholesterol Data", booktabs = TRUE) %>%
-kable_styling(latex_options = c("striped", "hold_position"))
+# Create a sample dataframe if needed
+# df <- data.frame(...) 
 
+# Generate the table
+kable(df, caption = "Cholesterol Data", booktabs = TRUE) %>%
+  kable_styling(latex_options = c("hold_position")) %>%
+  row_spec(seq(1, nrow(df), by = 2), background = "lightblue")
 ```
 
 ## Problem
@@ -62,15 +65,15 @@ The research question here is:
 
 #### Assumption 1: You have a continuous dependent variable.
 
-Remark: The dependent variable is cholesterol level and is continuous. Therefore, Assumption 1 is satisfied.
+**Remark.** The dependent variable in this study is the Cholesterol Level of the participants. This variable is quantitative and measured on a continuous scale (likely interval or ratio), meaning it can theoretically take on any value within a specific range (e.g., measured in mg/dL). Because the outcome variable is numeric and allows for meaningful arithmetic operations, Assumption 1 is satisfied.
 
 #### Assumption 2: You have one between-subjects factor (i.e., independent variable) that is categorical with two or more categories.
 
-Remark: The between-subjects factor is the brand of margarine and has 2 categories.
+**Remark.** The between-subjects independent variable is the Margarine Brand. This is a nominal, categorical variable that consists of two distinct levels: Brand A and Brand B. It is classified as a "between-subjects" factor because the participants are divided into mutually exclusive groups, where each participant is assigned to consume only one specific brand (either Brand A or Brand B), but not both.
 
 #### Assumption 3: You have one within-subjects factor (i.e., independent variable) that is categorical with two or more categories (Brand A, Brand B).
 
-Remark: The within-subjects factor is time and has 3 categorical levels (before, after 4 weeks, after 8 weeks).
+**Remark.** The within-subjects independent variable is Time, which represents the specific intervals at which data was collected. This factor is categorical and consists of three related levels: Baseline (Before), After 4 Weeks, and After 8 Weeks. It is classified as a "within-subjects" (or repeated measures) factor because the exact same participants were measured across all three time points to observe changes within the same individuals over the duration of the study.
 
 #### Assumption 4: There should be no significant outliers in any cell of the design.
 
@@ -104,8 +107,8 @@ plot_box_jitter <- function(timepoint) {
       x = "Margarine Brand",
       y = "Cholesterol"
     ) +
-    scale_fill_manual(values = c("B" = "#d95f02", "A" = "#1b9e77")) +
-    scale_color_manual(values = c("B" = "#d95f02", "A" = "#1b9e77")) +
+    scale_fill_manual(values = c("B" = "#377eb8", "A" = "#e41a1c")) +
+    scale_color_manual(values = c("B" = "#377eb8", "A" = "#e41a1c")) +
     theme(legend.position = "none")
 }
 
@@ -116,10 +119,9 @@ plot_after8   <- plot_box_jitter("After8weeks")
 plot_before
 plot_after4
 plot_after8
-
 ```
 
-Remark: Visual inspection of the raincloud plots for each time point (Before, After 4 weeks, After 8 weeks) and each Margarine group (A and B) shows that all data points fall reasonably close to the bulk of the distribution. There are no extreme values or points that appear far outside the main distribution, indicating that there are no significant outliers in any group. Therefore, Assumption 4 is satisfied.
+**Remark.** A visual inspection was conducted using raincloud plots for each of the 6 interaction groups (Brand A and Brand B across three time points: Before, After 4 Weeks, and After 8 Weeks). These plots, which visualize the raw data points alongside the density distribution, reveal that the individual observations are clustered consistently around the central tendency of their respective groups. All data points fall within a reasonable distance from the interquartile range, with no extreme values appearing detached from the main "cloud" or distribution density. Consequently, there is no evidence of significant outliers that could skew the analysis, and Assumption 4 is satisfied.
 
 #### Assumption 5: The dependent variable should be approximately normally distributed for each cell of the design.
 
@@ -134,7 +136,7 @@ library(kableExtra)
 descriptives <- df_long %>%
   group_by(Time, Margarine) %>%
   summarise(
-    Valid = n(),
+    Valid = dplyr::n(),
     Mean = mean(Cholesterol, na.rm = TRUE),
     `Std. Deviation` = sd(Cholesterol, na.rm = TRUE),
     Minimum = min(Cholesterol, na.rm = TRUE),
@@ -169,10 +171,17 @@ descriptives_long %>%
     latex_options = c("striped", "hold_position"),
     font_size = 10
   )
-
 ```
 
-Remark: The Shapiro-Wilk test was conducted for cholesterol levels in each Margarine group at all time points. All p-values were greater than 0.05 (Before: B = 0.13, A = 0.29; After 4 Weeks: B = 0.40, A = 0.15; After 8 Weeks: B = 0.22, A = 0.17), indicating no significant deviation from normality. Skewness and kurtosis values were also within acceptable ranges. Therefore, Assumption 5 of approximate normality is satisfied for all groups and time points.
+**Remark.** The assumption of normality was assessed using the Shapiro-Wilk test on the Cholesterol Level data for each of the 6 interaction cells (Brand A and Brand B at the Baseline, 4-Week, and 8-Week time points). The results indicated that the data for both margarine groups at all three time intervals were normally distributed, as the Shapiro-Wilk $p$-values were all greater than the significance level of 0.05.
+
+Specifically, the results were as follows:
+\begin{itemize}
+    \item \textbf{Brand A:} Before ($p = 0.29$), After 4 Weeks ($p = 0.15$), and After 8 Weeks ($p = 0.17$).
+    \item \textbf{Brand B:} Before ($p = 0.13$), After 4 Weeks ($p = 0.40$), and After 8 Weeks ($p = 0.22$).
+\end{itemize}
+
+Since all $p > 0.05$, we fail to reject the null hypothesis of normality. This conclusion is further corroborated by an inspection of the skewness and kurtosis values, which fell within the acceptable range (typically between -1.96 and +1.96), suggesting the distributions are symmetrical and not overly peaked or flat. Therefore, Assumption 5 is satisfied, and the data is suitable for parametric analysis.
 
 #### Assumption 6: The variance of your dependent variable should be equal between the groups of the between-subjects factor, referred to as the assumption of homogeneity of variances.
 
@@ -211,10 +220,9 @@ levene_table %>%
     align = "c"
   ) %>%
   kable_styling(latex_options = c("striped", "hold_position"), font_size = 10)
-
 ```
 
-Remark: Since all p-values are less than 0.05, the assumption of homogeneity of variances is violated for all time points. This indicates that the variances of cholesterol levels are significantly different between Margarine A and B at each measurement.
+**Remark.** The assumption of homogeneity of variances was assessed using Levene’s Test for Equality of Variances. This test examines whether the variance in cholesterol levels is consistent across the two Margarine groups (Brand A and Brand B) at each specific time point. The results revealed that the $p$-values for the Levene’s test were less than 0.05 for all three measurement intervals (Before, After 4 Weeks, and After 8 Weeks).Because the $p$-values fell below the significance threshold, we reject the null hypothesis that the variances are equal. This indicates that the spread or variability of cholesterol data is significantly different between Brand A and Brand B at every stage of the study. Consequently, the assumption of homogeneity of variances is violated, suggesting that interpreting the standard ANOVA results may require caution or robust corrections (such as ignoring the violation if sample sizes are equal, or using a stricter alpha level).
 
 #### Assumption 7: There should be homogeneity of covariances.
 
@@ -252,7 +260,7 @@ box_m_table %>%
 
 ```
 
-Remark: Box’s M test indicates that the covariance matrices of the cholesterol measurements between Margarine A and B are not significantly different (M = 4.048, df1 = 6, p = 0.670). Therefore, the assumption of homogeneity of covariances is met.
+**Remark.** Box’s M test indicates that the covariance matrices of the cholesterol measurements between Margarine A and B are not significantly different (M = 4.048, df1 = 6, p = 0.670). Therefore, the assumption of homogeneity of covariances is met.
 
 #### Assumption 8: The variance of the differences between groups should be equal, referred to as the assumption of sphericity.
 
@@ -281,7 +289,7 @@ ez_res$`Sphericity Corrections`
 
 ```
 
-Remark: Mauchly’s test showed that the assumption of sphericity was violated (W = 0.462, Chi-squared = 11.58, df = 2, p = 0.003). Therefore, the Greenhouse-Geisser (epsilon = 0.65) and Huynh-Feldt (epsilon = 0.684) corrections should be used in the repeated-measures ANOVA to adjust for this violation.
+**Remark.** Mauchly’s test showed that the assumption of sphericity was violated (W = 0.462, Chi-squared = 11.58, df = 2, p = 0.003). Therefore, the Greenhouse-Geisser (epsilon = 0.65) and Huynh-Feldt (epsilon = 0.684) corrections should be used in the repeated-measures ANOVA to adjust for this violation.
 
 ## Two-way mixed ANOVA (Mixed: between = Margarine, within = Time)
 
@@ -335,7 +343,7 @@ anova_summary %>%
 
 
 ```
-Remarks:
+**Remarks.**
 The mixed ANOVA revealed a significant main effect of Time, indicating that cholesterol levels changed across the three measurement points. This effect remained significant even after applying the Greenhouse–Geisser correction necessitated by the violation of sphericity. There was also a significant main effect of Margarine, suggesting that average cholesterol levels differed between Brand A and Brand B. Furthermore, the analysis showed a significant Time × Margarine interaction, meaning that the pattern of cholesterol change over time varied across the two brands. Because of this significant interaction, interpretation focuses on simple main effects and post hoc comparisons rather than the main effects in isolation.
 
 ## Post Hoc
@@ -359,7 +367,7 @@ knitr::kable(
 )
 
 ```
-Remarks:
+**Remarks.**
 Post hoc comparisons for the main effect of Time showed that cholesterol levels differed significantly between all pairs of time points, indicating a steady decline from Before to After 4 Weeks and then again from After 4 Weeks to After 8 Weeks. When examining time comparisons within each margarine brand, both Brand A and Brand B exhibited significant reductions in cholesterol over time, although the size and pattern of reductions differed, which supports the presence of the significant interaction. Additionally, comparisons between the margarine brands at each time point showed no significant difference at baseline, but significant differences emerged at both Week 4 and Week 8, with one brand maintaining notably lower cholesterol levels at these later time points.
 
 ## Simple main effects
@@ -456,7 +464,7 @@ threeparttable = TRUE
 )
 
 ```
-Remarks:
+**Remarks.**
 The simple main effects analysis showed that Time had a significant effect on cholesterol levels within each margarine brand. For Brand A, cholesterol decreased consistently across all three time points, demonstrating a strong and steady treatment effect. For Brand B, cholesterol levels also changed significantly over time, but the reductions were more modest compared to Brand A. These findings indicate that although both brands were effective in lowering cholesterol, Brand A produced a more pronounced improvement across the duration of the study.
 
 
