@@ -1,0 +1,268 @@
+---
+title: "TESTING SA2"
+author: "Sinocruz, A"
+date: "2025-12-12"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document:
+    latex_engine: lualatex
+---
+
+
+```{r}
+# Load required libraries
+library(tidyverse)
+library(car)        
+library(multcomp)   
+library(emmeans)    
+library(rstatix)    
+library(knitr)      
+library(kableExtra) 
+library(ggplot2)    
+
+# If you have CSV, change the path here please. Thank you!
+data <- read.csv("C:/Users/Arvie Sinocruz/Downloads/Alzheimers Mice Data.csv")
+
+
+data <- data %>%
+  mutate(
+    AD_Status = factor(AD_Status, labels = c("Transgenic", "Wild")),
+    Treatment = factor(Treatment, labels = c("Drug1", "Drug2", "Drug3", "Drug4"))
+  )
+
+# View first few rows
+head(data) %>% kable(caption = "First 6 Rows of Alzheimer Mice Dataset")
+```
+
+## Assumptions
+
+Prior to conducting the ANOVA, the underlying assumptions will be evaluated:
+
+**Assumption 1:** You have one dependent variable that is measured at the continuous level.
+
+**Assumption 2**: You have one independent variable that consists of three or more categorical, independent groups.
+
+**Assumption 3:** You should have independence of observations, which means that there is no relationship between the observations in each group of the independent variable or among the groups themselves.
+
+**Assumption 4:** There should be no significant outliers in the three or more groups of your independent variable in terms of the dependent variable.
+
+**Assumption 5:** Your dependent variable should be approximately normally distributed for each group of the independent variable.
+
+**Assumption 6:** You have homogeneity of variances (i.e., the variance of the dependent variable is equal in each group of your independent variable).
+
+## Data Description
+
+This study uses an experimental design involving mice to evaluate drug efficacy in models of Alzheimer's disease (AD). The experimental setup incorporates two main factors:
+
+**AD Status (Genotype):** Half of the mice are transgenic, meaning they have been genetically modified to develop AD pathology. The remaining half are wild-type, serving as non-modified controls presumed to be free of AD.
+**Treatment:** Mice are systematically assigned to one of four distinct drug administration conditions.
+
+Cognitive performance is measured using a maze task. The number of errors recorded serves as the dependent variable across two distinct time points:
+
+**Training Day Errors:** Measures initial acquisition and learning performance.
+**Memory Day Errors:** Measures retention and long-term memory performance.
+
+## **Null and Alternative Hypotheses**
+
+**For Training Day errors:**
+
+H₀: The population means for Training Day Errors are equal across all levels of AD Status, Treatment, and there is no interaction between the two factors.
+
+H₁: There is a significant difference in the mean Training Day Errors due to the main effect of AD Status, the main effect of Treatment, or their interaction.
+
+**For Memory Day errors:**
+
+H₀: The population means for Memory Day Errors are equal across all levels of AD Status, Treatment, and there is no interaction between the two factors.
+
+H₁: There is a significant difference in the mean Memory Day Errors due to the main effect of AD Status, the main effect of Treatment, or their interaction.
+
+# Descriptive Statistics
+```{r}
+desc_table <- data %>%
+  group_by(AD_Status, Treatment) %>%
+  summarise(
+    Training_Mean = mean(Training),
+    Training_SD   = sd(Training),
+    Memory_Mean   = mean(Memory),
+    Memory_SD     = sd(Memory),
+    .groups = "drop"
+  )
+
+desc_table %>%
+  kable(caption = "Means and Standard Deviations by AD Status and Treatment", digits = 2, "html") %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover", "condensed")) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#4B8BBE") %>%
+  column_spec(1:2, bold = TRUE) %>%
+  column_spec(3:6, background = "#E6F0FA")
+```
+
+# Checking the ANOVA Assumptions
+
+**Assumption 1:** The dependent variables, Training Errors and Memory Errors, represent the count of mistakes made in the maze. As count data, they are treated as ratio-level (continuous) data, satisfying the requirement for the ANOVA test.
+
+***Remark:*** Both variables are continuous count data, meeting this assumption.
+
+**Assumption 2:** The independent variables (AD Status and Treatment) are categorical.
+
+***Remark:*** AD Status has 2 levels (Transgenic, Wild) and Treatment has 4 levels (Drug1–Drug4).
+
+***Assumption 3:*** Independence of observations.
+
+***Remark:*** The experimental design is a between-subjects design. Each mouse was assigned exclusively to one of the eight unique ***AD_Status x Treatment combinations***. Therefore, the measurements are independent, as the performance of one mouse does not influence the performance of any other mouse.
+
+***Assumption 4:*** No significant outliers.
+
+```{r}
+# Check for outliers visually
+
+# Training Day Boxplot
+data %>%
+  mutate(Group = paste0(AD_Status, "_", Treatment)) %>%
+  ggplot(aes(x = Group, y = Training, fill = AD_Status)) +
+  geom_boxplot(outlier.colour = "red", outlier.shape = 8, lwd = 0.8) +
+  scale_fill_manual(values = c("#FF9999", "#66B2FF")) +
+    labs(
+    title = "Training Day Maze Errors by AD Status and Drug Treatment",
+    subtitle = "Comparing Transgenic vs Wild-Type mice across four drug treatments",
+    x = "Group (AD Status + Treatment)", 
+    y = "Number of Maze Errors",
+    fill = "AD Status"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Memory Day Boxplot
+data %>%
+  mutate(Group = paste0(AD_Status, "_", Treatment)) %>%
+  ggplot(aes(x = Group, y = Memory, fill = AD_Status)) +
+  geom_boxplot(outlier.colour = "red", outlier.shape = 8, lwd = 0.8) +
+  labs(
+    title = "Maze Errors by AD Status and Drug Treatment",
+    subtitle = "Highlights differences between Transgenic and Wild-Type mice after training",
+    x = "Group (AD Status + Treatment)", 
+    y = "Number of Maze Errors",
+    fill = "AD Status"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+**Remark:** Outliers were assessed visually using boxplots for the dependent variables within each of the eight groups. No extreme or undue outliers were identified (see boxplot figure ), suggesting that the data is robust against non-parametric influences from extreme values.
+
+
+**Assumption 5:** Normality of residuals.
+
+```{r}
+# Normality of residuals
+training_aov <- aov(Training ~ AD_Status * Treatment, data = data)
+memory_aov   <- aov(Memory   ~ AD_Status * Treatment, data = data)
+
+# Normality
+shapiro_training <- shapiro.test(residuals(training_aov))
+shapiro_memory   <- shapiro.test(residuals(memory_aov))
+
+shapiro_training
+shapiro_memory
+```
+
+```{r}
+# Q-Q Plots
+qqnorm(residuals(training_aov)); qqline(residuals(training_aov))
+qqnorm(residuals(memory_aov)); qqline(residuals(memory_aov))
+```
+
+***Remark:*** Since both statistical tests and visual inspections indicate that the residuals are approximately normally distributed, **Assumption 5 (normality of residuals) is met**. This supports the validity of the ANOVA results, as the F-test relies on normally distributed errors within each group.
+
+**Assumption 6:** Homogeneity of variances
+```{r}
+leveneTest(Training ~ AD_Status * Treatment, data = data)
+leveneTest(Memory   ~ AD_Status * Treatment, data = data)
+```
+
+***Remark:*** Since Levene’s Test results are non-significant, **Assumption 6 (homogeneity of variances) is satisfied**. This means that the ANOVA assumption of equal group variances holds, strengthening the reliability of the F-statistics and the post-hoc comparisons.
+
+# Two-Way ANOVA
+```{r}
+# Training Day
+training_anova_tbl <- tidy(training_aov) %>%
+  mutate(Effect_Size = (sumsq / sum(sumsq)) * 100) # Partial eta squared approximation
+
+training_anova_tbl %>%
+  kable(caption = "Two-Way ANOVA for Training Day Errors", digits = 3, "html") %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover")) %>%
+  row_spec(0, bold = TRUE, background = "#4B8BBE", color = "white") %>%
+  column_spec(1:2, bold = TRUE)
+
+# Memory Day
+memory_anova_tbl <- tidy(memory_aov) %>%
+  mutate(Effect_Size = (sumsq / sum(sumsq)) * 100)
+
+memory_anova_tbl %>%
+  kable(caption = "Two-Way ANOVA for Memory Day Errors", digits = 3, "html") %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover")) %>%
+  row_spec(0, bold = TRUE, background = "#99CC66", color = "white") %>%
+  column_spec(1:2, bold = TRUE)
+```
+
+***Remark:***
+The ANOVA results collectively suggest that drug treatment primarily affects learning performance during the training phase, but its effect does not differ between genotypes. In contrast, genotype is the dominant factor affecting memory retention, with transgenic mice consistently performing worse than wild-type mice, regardless of treatment. Interaction effects were non-significant in both analyses, indicating no evidence that drug efficacy depends on AD status. Effect size estimates further highlight the relative contributions of each factor, confirming that genotype plays a critical role in memory performance, whereas treatment has a more modest impact on learning.
+
+# Post-Hoc Comparisions
+```{r}
+library(emmeans)
+
+# Training Day: Treatment only
+training_tukey_treatment <- emmeans(training_aov, pairwise ~ Treatment, adjust = "tukey")
+training_tukey_treatment$contrasts %>%
+  summary(infer = TRUE) %>%
+  kable(caption = "Tukey Pairwise Comparisons for Training Day Errors by Treatment", digits = 3, "html") %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover")) %>%
+  row_spec(0, bold = TRUE, background = "#4B8BBE", color = "white")
+
+# Training Day: AD_Status × Treatment interaction
+training_tukey_interaction <- emmeans(training_aov, pairwise ~ AD_Status * Treatment, adjust = "tukey")
+training_tukey_interaction$contrasts %>%
+  summary(infer = TRUE) %>%
+  kable(caption = "Tukey Pairwise Comparisons for Training Day Errors by AD Status × Treatment", digits = 3, "html") %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover")) %>%
+  row_spec(0, bold = TRUE, background = "#4B8BBE", color = "white")
+
+# Memory Day: Treatment only
+memory_tukey_treatment <- emmeans(memory_aov, pairwise ~ Treatment, adjust = "tukey")
+memory_tukey_treatment$contrasts %>%
+  summary(infer = TRUE) %>%
+  kable(caption = "Tukey Pairwise Comparisons for Memory Day Errors by Treatment", digits = 3, "html") %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover")) %>%
+  row_spec(0, bold = TRUE, background = "#99CC66", color = "white")
+
+# Memory Day: AD_Status × Treatment interaction
+memory_tukey_interaction <- emmeans(memory_aov, pairwise ~ AD_Status * Treatment, adjust = "tukey")
+memory_tukey_interaction$contrasts %>%
+  summary(infer = TRUE) %>%
+  kable(caption = "Tukey Pairwise Comparisons for Memory Day Errors by AD Status × Treatment", digits = 3, "html") %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover")) %>%
+  row_spec(0, bold = TRUE, background = "#99CC66", color = "white")
+```
+***Remark:***
+These results indicate that while certain drugs (e.g., Drug2 and Drug3) effectively improve learning during the Training Day, their effects **do not differ between transgenic and wild-type mice**. In contrast, drug treatments **did not significantly affect memory retention** on the Memory Day, and genotype remained the primary determinant of performance. Overall, the post-hoc analysis complements the ANOVA findings by highlighting **which specific treatments contributed to differences in training performance** while confirming the consistency of genotype effects on memory.
+
+
+## Results
+A two-way factorial ANOVA was conducted to evaluate the effects of AD Status (Transgenic vs. Wild-Type), Treatment (Drug1–Drug4), and their interaction on Training Day and Memory Day maze errors in mice.
+
+**Training Day Errors:**
+The analysis revealed a significant main effect of Treatment, F(3, 32) = 3.79, p = .020, indicating that the type of drug administered influenced learning performance during the training phase. The main effect of AD Status was not significant, F(1, 32) = 1.22, p = .278, suggesting that transgenic and wild-type mice did not differ substantially in training errors. The AD Status × Treatment interaction was also non-significant, F(3, 32) = 1.22, p = .320, indicating that the effect of drug treatment on training errors was consistent across genotypes. Effect size estimates showed that Treatment accounted for approximately 26% of the variance in training errors, while AD Status and the interaction contributed less (3.6% and 10.2%, respectively).
+
+Post-hoc pairwise comparisons using Tukey’s HSD revealed that Drug2 significantly reduced errors compared to Drug1 (p < .05), and Drug3 also differed from Drug1 (p < .05). No significant differences were observed between Drugs 2, 3, and 4. These results indicate that while some drugs improve training performance, the effect is similar for both transgenic and wild-type mice.
+
+**Memory Day Errors:**
+For memory retention, a significant main effect of AD Status was observed, F(1, 32) = 75.31, p < .001, with transgenic mice making substantially more memory errors than wild-type mice, confirming expected cognitive deficits. The main effect of Treatment was not significant, F(3, 32) = 1.92, p = .146, and the interaction effect was also non-significant, F(3, 32) = 1.15, p = .343, suggesting that the effect of drug treatment on memory errors did not differ between genotypes. Effect size estimates indicated that AD Status accounted for approximately 70% of the variance in memory errors, while Treatment and the interaction contributed only 15% and 9.7%, respectively.
+
+Tukey post-hoc tests for Memory Day did not reveal any significant pairwise differences among drug treatments. This suggests that, although treatment influenced learning during the Training Day, it had limited impact on memory retention, and genotype remained the dominant factor affecting performance.
+
+
+# Discussion
+These results indicate that drug treatment significantly affects learning during the Training Day, but the effect is consistent across transgenic and wild-type mice. In contrast, genotype is the primary determinant of memory performance, with transgenic mice performing worse than wild-type mice, independent of treatment. The absence of significant interaction effects in both analyses indicates that drug efficacy does not depend on AD status. Effect size estimates further highlight that treatment plays a modest role in learning, whereas genotype overwhelmingly influences memory retention.
